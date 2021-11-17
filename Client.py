@@ -238,23 +238,31 @@ def on_exit():
 
 root = tk.Tk()
 root.geometry("900x500")
-root.title("App")
+root.title("Currency Converter")
+root.iconbitmap('dollar.ico')
 img1=Image.open("gold_price.PNG")
 test=ImageTk.PhotoImage(img1)
 label1 = tkinter.Label(image=test)
 label1.image = test
 label1.place(x=1,y=1)
 
+status_input_id = Label(root, text = "Nhập IP Server:")
+
+
 entry = tk.Entry()
-entry.insert(0,'Nhập ip')
-entry.grid(row=1, column=1)
-myButton_connect = tk.Button(text="Kết nối", command=ConnectToServer)
-myButton_connect.grid(row=1, column=2)
-myButton_regis = tk.Button(text="Đăng ký", command=registration_w)
-myButton_regis.grid(row=2, column=1)
-myButton_login = tk.Button(text="Đăng nhập", command=Login_w)
-myButton_login.grid(row=3, column=1)
-myButton_Exit = tk.Button(text="Thoát", command=on_exit)
-myButton_Exit.grid(row=5, column=1)
-root.protocol("WM_DELETE_WINDOW", lambda: on_exit())
+#entry.insert(0, "Nhập IP Server")
+status_input_id.grid(row = 1000, column = 50)
+entry.grid(row=150, column=60)
+
+
+
+#myButton_connect = tk.Button(text="Kết nối", command=ConnectToServer)
+#myButton_connect.grid(row=1, column=2)
+#myButton_regis = tk.Button(text="Đăng ký", command=registration_w)
+#myButton_regis.grid(row=2, column=1)
+#myButton_login = tk.Button(text="Đăng nhập", command=Login_w)
+#myButton_login.grid(row=3, column=1)
+#myButton_Exit = tk.Button(text="Thoát", command=on_exit)
+#myButton_Exit.grid(row=5, column=1)
+#root.protocol("WM_DELETE_WINDOW", lambda: on_exit())
 root.mainloop()

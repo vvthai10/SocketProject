@@ -7,13 +7,14 @@ import pickle
 import schedule
 import time
 from datetime import datetime
+from requests.structures import CaseInsensitiveDict  #sử dụng cái hàm headers["Accept"], headers["Authorization"]
 # --- functions ---
 
-def dang_ky(conn, addr):
-    file_registry = open('DS_ng_dung.txt', 'a')
+def Registration(conn, addr):
+    file_registry = open('InforUser.txt', 'a')
     try:
         while True:
-            file_read = open('DS_ng_dung.txt', 'r')
+            file_read = open('InforUser.txt', 'r')
             msg_check = conn.recv(1024).decode("utf8")
             if msg_check == "break":
                 return
@@ -27,12 +28,12 @@ def dang_ky(conn, addr):
                 line_split = line.split(" ")
 
                 if line_split[0] == check_exist or pass_again_recv != password_recv:
-                    conn.sendall(bytes("Ten dang nhap ton tai", "utf8"))
+                    conn.sendall(bytes("Tài khoản đã tồn tại", "utf8"))
                     success = False
                     break
             if success == True:
                 file_registry.writelines(username_recv + " " + password_recv + "\n")
-                conn.sendall(bytes("Dang ky thanh cong", "utf8"))
+                conn.sendall(bytes("Đăng kí thành công", "utf8"))
                 break
         file_read.close()
         file_registry.close()
@@ -40,10 +41,10 @@ def dang_ky(conn, addr):
         return
 
 
-def dang_nhap(conn, addr):
+def Login(conn, addr):
     while True:
         try:
-            file_Login = open('DS_ng_dung.txt', 'r')
+            file_Login = open('InforUser.txt', 'r')
             msg_check = conn.recv(1024).decode("utf8")
             if msg_check == "break":
                 return
@@ -53,24 +54,40 @@ def dang_nhap(conn, addr):
             while file_Login.tell() != os.fstat(file_Login.fileno()).st_size:
                 line = file_Login.readline()
                 if line == user_name + " " + password + "\n":
-                    conn.sendall(bytes("Ban da dang nhap thanh cong", "utf8"))
+                    conn.sendall(bytes("Đăng nhập thành công", "utf8"))
                     success = True
                     file_Login.close()
                     break
             if success == False:
-                conn.sendall(bytes("Ten dang nhap hoac mat khau khong dung", "utf8"))
+                conn.sendall(bytes("Tên đăng nhập hoặc mật khẩu không đúng", "utf8"))
             else:
                 break
         except socket.error:
             return
 
 
+
+
+
 def update_json_file():
-    url = 'https://tygia.com/json.php?ran=0&rate=0&gold=1&bank=VIETCOM&date=now'
-    r = requests.get(url)
-    r = r.text.encode("UTF8")
-    data = json.loads(r)
-    file_data = open('data.json', 'wb')
+    #Lấy api_key một cách tự động do sau 15 ngày sẽ phải cập nhật.
+    url_get_api_key = "https://vapi.vnappmob.com/api/request_api_key?scope=exchange_rate"
+    resp = req.get(url_get_api_key)
+    api_key = resp.text[12:(len (resp.text) - 3)]
+
+    url = "https://vapi.vnappmob.com/api/v2/exchange_rate/vcb"
+    headers = CaseInsensitiveDict()
+    headers["Accept"] = "application/json"
+
+    #api_key = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2MzgyMDIxMzYsImlhdCI6MTYzNjkwNjEzNiwic2NvcGUiOiJleGNoYW5nZV9yYXRlIiwicGVybWlzc2lvbiI6MH0.YS1yDCiew3Lo0tABSSlPpqTK_xHr_iQzGP3wHPJnPII"
+    headers["Authorization"] = "Bearer " + api_key
+
+    r = requests.get(url, headers=headers)
+    r = r.text.encode("utf-8")  #Dữ liệu text kiểu binary
+    data = json.loads(r)    #Chuyển từ file json sang python
+
+    #Ghi file binary
+    file_data = open("InforExchange.json", "wb")
     file_data.write(r)
     file_data.close()
 
@@ -144,7 +161,7 @@ def tra_cuu(conn, addr):
 
 def client_exit(conn, addr):
     conn.close()
-    print(f"{addr} da thoat khoi server")
+    print(f"{addr} Da thoat khoi server")
 
 
 def handle_client(conn, addr):
@@ -154,16 +171,16 @@ def handle_client(conn, addr):
         try:
             command = conn.recv(1024).decode("utf8")
         except:
-            print(f'{addr} đã thoát 1 cách đột ngột')
+            print(f'{addr} Đã thoát 1 cách đột ngột')
             conn.close()
             break
 
         command = command.lower()
         print('[handle_client] run command:', command)
         if command == "dang ky":
-            dang_ky(conn, addr)
+            Registration(conn, addr)
         elif command == "dang nhap":
-            dang_nhap(conn, addr)
+            Login(conn, addr)
         elif command == "tra cuu":
             tra_cuu(conn, addr)
         elif command == "exit":
@@ -180,8 +197,7 @@ PORT = 65432
 print('Starting ...')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
-             1)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((HOST, PORT))
 s.listen()
 
