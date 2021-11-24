@@ -74,6 +74,35 @@ def tra_cuu(entry, tree, child_windown):
             dist['buy_cash'] + " " + dist['buy_transfer'], dist['currency'], dist['sell']))
         i = i + 1
 
+def dropdownList(window):
+    OPTIONS = [
+        "AUD",
+        "CAD",
+        "CHF",
+        "CNY",
+        "DKK",
+        "EUR",
+        "GBP",
+        "HKD",
+        "INR",
+        "JPY",
+        "KRW",
+        "KWD",
+        "MYR",
+        "NOK",
+        "RUB",
+        "SAR",
+        "SEK",
+        "SGD",
+        "THB",
+        "USD"
+    ] 
+    variable = StringVar(window)
+    variable.set(OPTIONS[0])
+    menu = OptionMenu(window, variable, *OPTIONS)
+
+    return [menu,variable]
+
 
 def tra_cuu_w():
     msg = "tra cuu"
@@ -110,8 +139,9 @@ def tra_cuu_w():
     #entry2.insert(0, 'tháng')
     #entry3 = tk.Entry(child_windown, width=15)
     #entry3.insert(0, 'ngày')
-    entry = tk.Entry(child_windown, width=35)
-    entry.insert(0, 'Nhập tên tiền tệ')
+    option = dropdownList(child_windown)
+    dropdown = option[0] # Đây là cái list tiền
+    entry = option[1] # Đây là loại tiền mình muốn tra cứu
     print("MAY NHAN TIEN GI")
     print(entry)
     butt_search = tk.Button(child_windown, text='Tra cứu', command=lambda: tra_cuu(entry, tree, child_windown))
@@ -119,7 +149,9 @@ def tra_cuu_w():
     #entry1.grid(row=1, column=1)
     #entry2.grid(row=1, column=2)
     #entry3.grid(row=1, column=3)
-    entry.grid(row=2, column=1)
+    dropdownLabel = tk.Label(child_windown, text = "Chọn loại tiền")
+    dropdownLabel.grid(row=2, column=1)
+    dropdown.grid(row=2, column=2)
     butt_search.grid(row=3, column=2)
     butt_thoat.grid(row=3, column=3)
     #     =====================================
