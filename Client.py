@@ -6,7 +6,7 @@ import tkinter.messagebox
 import socket
 import pickle
 from PIL import  Image,ImageTk
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # -------------func-------------
 
@@ -15,45 +15,52 @@ def ConnectToServer():
     PORT = 65432
     test = True
     try:
-        s.connect((HOST, PORT))
+        client.connect((HOST, PORT))
     except Exception as e:
         tkinter.messagebox.showerror(title="Lỗi", message="Lỗi kết nối đến server")
         test = False
     if test:
         tkinter.messagebox.showinfo(title="Thông báo", message="Đã kết nối tới server thành công")
 
-
 def stop_tra_cuu(child_windown):
     msg = "dung tra cuu"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msg, "utf8"))
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     child_windown.destroy()
 
 
-def tra_cuu(entry1, entry2, entry3, entry4, tree, child_windown):
+def tra_cuu(entry, tree, child_windown):
+    print("MAY NHAN TIEN GI")
+    print(entry)
+    
     try:
-        s.sendall(bytes("tiep tuc", "utf8"))
-        nam = entry1.get()
-        s.sendall(bytes(nam, "utf8"))
-        thang = entry2.get()
-        s.sendall(bytes(thang, "utf8"))
-        ngay = entry3.get()
-        s.sendall(bytes(ngay, "utf8"))
-        vang = entry4.get()
-        s.sendall(bytes(vang, "utf8"))
+        tiep_tuc = "tiep tuc"
+        vang = entry.get()  #lấy thông tin loại tiền muốn tra cứu
+        
+        print("SAU KHI RUT DUOC GI TU ENTRY VAO VANG")
+        print(vang)
+        client.sendall(bytes(tiep_tuc, "utf8"))
+        client.sendall(bytes(vang, "utf8"))
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     i = 1
+    print("CHUAN BỊ IN RA MAN HINH")
     while True:
-        result = s.recv(3072)
+        print("NHẬN THÔNG TIN GỬI VỀ")
+        #3072
+        result = client.recv(1024)
+        print("IN THÔNG TIN GỬI VỀ")
+        print(type(result))
+        print(result)
+        #Nhan duoc ket qua
         dist = pickle.loads(result)
         if dist == {"id": 0}:
             break
@@ -61,32 +68,32 @@ def tra_cuu(entry1, entry2, entry3, entry4, tree, child_windown):
             tkinter.messagebox.showinfo("Thông báo","Tên này không tồn tại, hãy đảm bảo tên vàng bạn cần tìm là chính xác")
             break
         else:
+            print("Toi cho da tra ket qua")
             print(dist)
             tree.insert(parent='', index='end', text="Item_" + str(i), values=(
-            dist['company'] + " " + dist['brand'], dist['buy'], dist['sell'], dist['type'], dist['updated']))
+            dist['buy_cash'] + " " + dist['buy_transfer'], dist['currency'], dist['sell']))
         i = i + 1
 
 
 def tra_cuu_w():
     msg = "tra cuu"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msg, "utf8"))
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     child_windown = Toplevel(root)
     child_windown.title("App")
     child_windown.geometry("1200x300")
-    columns = ('Tên công ty', 'Mua', 'Bán', 'Loại', 'Ngày')
+    columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
     tree = ttk.Treeview(child_windown, columns=columns)
     tree.heading('#0', text='STT')
-    tree.heading('#1', text='Tên công ty')
-    tree.heading('#2', text='Mua')
-    tree.heading('#3', text='Bán')
-    tree.heading('#4', text='Loại')
-    tree.heading('#5', text='Ngày')
+    tree.heading('#1', text='Money')
+    tree.heading('#2', text='buy_cash')
+    tree.heading('#3', text='buy_transfer')
+    tree.heading('#4', text='sell')
 
     # Specify attributes of the columns
     tree.column('#0', stretch=tk.YES)
@@ -94,25 +101,25 @@ def tra_cuu_w():
     tree.column('#2', stretch=tk.YES)
     tree.column('#3', stretch=tk.YES)
     tree.column('#4', stretch=tk.YES)
-    tree.column('#5', stretch=tk.YES)
     tree.grid(row=5, columnspan=4, sticky='nsew')
 
     # add button
-    entry1 = tk.Entry(child_windown, width=15)
-    entry1.insert(0, 'năm')
-    entry2 = tk.Entry(child_windown, width=15)
-    entry2.insert(0, 'tháng')
-    entry3 = tk.Entry(child_windown, width=15)
-    entry3.insert(0, 'ngày')
-    entry4 = tk.Entry(child_windown, width=35)
-    entry4.insert(0, 'Nhập tên vàng')
-    butt_search = tk.Button(child_windown, text='Tra cứu',
-                            command=lambda: tra_cuu(entry1, entry2, entry3, entry4, tree, child_windown))
+    #entry1 = tk.Entry(child_windown, width=15)
+    #entry1.insert(0, 'năm')
+    #entry2 = tk.Entry(child_windown, width=15)
+    #entry2.insert(0, 'tháng')
+    #entry3 = tk.Entry(child_windown, width=15)
+    #entry3.insert(0, 'ngày')
+    entry = tk.Entry(child_windown, width=35)
+    entry.insert(0, 'Nhập tên tiền tệ')
+    print("MAY NHAN TIEN GI")
+    print(entry)
+    butt_search = tk.Button(child_windown, text='Tra cứu', command=lambda: tra_cuu(entry, tree, child_windown))
     butt_thoat = tk.Button(child_windown, text="Thoát", command=lambda: stop_tra_cuu(child_windown))
-    entry1.grid(row=1, column=1)
-    entry2.grid(row=1, column=2)
-    entry3.grid(row=1, column=3)
-    entry4.grid(row=2, column=1)
+    #entry1.grid(row=1, column=1)
+    #entry2.grid(row=1, column=2)
+    #entry3.grid(row=1, column=3)
+    entry.grid(row=2, column=1)
     butt_search.grid(row=3, column=2)
     butt_thoat.grid(row=3, column=3)
     #     =====================================
@@ -121,17 +128,17 @@ def tra_cuu_w():
 
 def registration(entry1, entry2, entry3, reg_w):
     try:
-        s.sendall(bytes("tiep tuc", "utf8"))
+        client.sendall(bytes("tiep tuc", "utf8"))
         username = entry1.get()
-        s.sendall(bytes(username, "utf8"))
+        client.sendall(bytes(username, "utf8"))
         password = entry2.get()
-        s.sendall(bytes(password, "utf8"))
+        client.sendall(bytes(password, "utf8"))
         password_agian = entry3.get()
-        s.sendall(bytes(password_agian, "utf8"))
-        notice = s.recv(1024).decode("utf8")
+        client.sendall(bytes(password_agian, "utf8"))
+        notice = client.recv(1024).decode("utf8")
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     if notice == "Dang ky thanh cong" and password_agian == password:
@@ -148,15 +155,15 @@ def registration(entry1, entry2, entry3, reg_w):
 
 def Login(entry1, entry2, log_w):
     try:
-        s.sendall(bytes("tiep tuc", "utf8"))
+        client.sendall(bytes("tiep tuc", "utf8"))
         username = entry1.get()
-        s.sendall(bytes(username, "utf8"))
+        client.sendall(bytes(username, "utf8"))
         password = entry2.get()
-        s.sendall(bytes(password, "utf8"))
-        notice = s.recv(1024).decode("utf8")
+        client.sendall(bytes(password, "utf8"))
+        notice = client.recv(1024).decode("utf8")
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     if notice == "Ban da dang nhap thanh cong":
@@ -173,7 +180,7 @@ def Login(entry1, entry2, log_w):
 
 
 def on_close(log_w):
-    s.sendall(bytes("break", "utf8"))
+    client.sendall(bytes("break", "utf8"))
     log_w.destroy()
 
 
@@ -181,10 +188,10 @@ def on_close(log_w):
 def registration_w():
     msg = "dang ky"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msg, "utf8"))
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     reg_w = Toplevel(root)
@@ -207,10 +214,10 @@ def registration_w():
 def Login_w():
     msg = "dang nhap"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msg, "utf8"))
     except socket.error:
         tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        client.close()
         root.destroy()
         return
     log_w = Toplevel(root)
@@ -229,8 +236,8 @@ def Login_w():
 
 def on_exit():
     msg = "exit"
-    s.sendall(bytes(msg, "utf8"))
-    s.close()
+    client.sendall(bytes(msg, "utf8"))
+    client.close()
     root.destroy()
 
 
@@ -238,31 +245,23 @@ def on_exit():
 
 root = tk.Tk()
 root.geometry("900x500")
-root.title("Currency Converter")
-root.iconbitmap('dollar.ico')
+root.title("App")
 img1=Image.open("gold_price.PNG")
 test=ImageTk.PhotoImage(img1)
 label1 = tkinter.Label(image=test)
 label1.image = test
 label1.place(x=1,y=1)
 
-status_input_id = Label(root, text = "Nhập IP Server:")
-
-
 entry = tk.Entry()
-#entry.insert(0, "Nhập IP Server")
-status_input_id.grid(row = 1000, column = 50)
-entry.grid(row=150, column=60)
-
-
-
-#myButton_connect = tk.Button(text="Kết nối", command=ConnectToServer)
-#myButton_connect.grid(row=1, column=2)
-#myButton_regis = tk.Button(text="Đăng ký", command=registration_w)
-#myButton_regis.grid(row=2, column=1)
-#myButton_login = tk.Button(text="Đăng nhập", command=Login_w)
-#myButton_login.grid(row=3, column=1)
-#myButton_Exit = tk.Button(text="Thoát", command=on_exit)
-#myButton_Exit.grid(row=5, column=1)
-#root.protocol("WM_DELETE_WINDOW", lambda: on_exit())
+entry.insert(0,'Nhập ip')
+entry.grid(row=1, column=1)
+myButton_connect = tk.Button(text="Kết nối", command=ConnectToServer)
+myButton_connect.grid(row=1, column=2)
+myButton_regis = tk.Button(text="Đăng ký", command=registration_w)
+myButton_regis.grid(row=2, column=1)
+myButton_login = tk.Button(text="Đăng nhập", command=Login_w)
+myButton_login.grid(row=3, column=1)
+myButton_Exit = tk.Button(text="Thoát", command=on_exit)
+myButton_Exit.grid(row=5, column=1)
+root.protocol("WM_DELETE_WINDOW", lambda: on_exit())
 root.mainloop()

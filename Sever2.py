@@ -6,15 +6,16 @@ import json
 import pickle
 import schedule
 import time
+import requests as req
 from datetime import datetime
-from requests.structures import CaseInsensitiveDict  #sử dụng cái hàm headers["Accept"], headers["Authorization"]
+from requests.structures import CaseInsensitiveDict 
 # --- functions ---
 
-def Registration(conn, addr):
-    file_registry = open('InforUser.txt', 'a')
+def dang_ky(conn, addr):
+    file_registry = open('DS_ng_dung.txt', 'a')
     try:
         while True:
-            file_read = open('InforUser.txt', 'r')
+            file_read = open('DS_ng_dung.txt', 'r')
             msg_check = conn.recv(1024).decode("utf8")
             if msg_check == "break":
                 return
@@ -28,12 +29,12 @@ def Registration(conn, addr):
                 line_split = line.split(" ")
 
                 if line_split[0] == check_exist or pass_again_recv != password_recv:
-                    conn.sendall(bytes("Tài khoản đã tồn tại", "utf8"))
+                    conn.sendall(bytes("Ten dang nhap ton tai", "utf8"))
                     success = False
                     break
             if success == True:
                 file_registry.writelines(username_recv + " " + password_recv + "\n")
-                conn.sendall(bytes("Đăng kí thành công", "utf8"))
+                conn.sendall(bytes("Dang ky thanh cong", "utf8"))
                 break
         file_read.close()
         file_registry.close()
@@ -41,10 +42,10 @@ def Registration(conn, addr):
         return
 
 
-def Login(conn, addr):
+def dang_nhap(conn, addr):
     while True:
         try:
-            file_Login = open('InforUser.txt', 'r')
+            file_Login = open('DS_ng_dung.txt', 'r')
             msg_check = conn.recv(1024).decode("utf8")
             if msg_check == "break":
                 return
@@ -54,19 +55,16 @@ def Login(conn, addr):
             while file_Login.tell() != os.fstat(file_Login.fileno()).st_size:
                 line = file_Login.readline()
                 if line == user_name + " " + password + "\n":
-                    conn.sendall(bytes("Đăng nhập thành công", "utf8"))
+                    conn.sendall(bytes("Ban da dang nhap thanh cong", "utf8"))
                     success = True
                     file_Login.close()
                     break
             if success == False:
-                conn.sendall(bytes("Tên đăng nhập hoặc mật khẩu không đúng", "utf8"))
+                conn.sendall(bytes("Ten dang nhap hoac mat khau khong dung", "utf8"))
             else:
                 break
         except socket.error:
             return
-
-
-
 
 
 def update_json_file():
@@ -87,7 +85,7 @@ def update_json_file():
     data = json.loads(r)    #Chuyển từ file json sang python
 
     #Ghi file binary
-    file_data = open("InforExchange.json", "wb")
+    file_data = open("data.json", "wb")
     file_data.write(r)
     file_data.close()
 
@@ -99,36 +97,32 @@ def update_json_data_after_30m():
         time.sleep(1)
 
 
-def Luu_va_cap_nhat_du_lieu(nam, thang, ngay):
-    url = 'https://tygia.com/json.php?ran=0&rate=0&gold=1&bank=VIETCOM&date=' + nam + thang + ngay
-
-    r = requests.get(url)
-    print('request thành công')
-    r = r.text.encode("UTF8")
-    data = json.loads(r)
-    file_data = open('data1.json', 'wb')
-    file_data.write(r)
-    file_data.close()
-
-
 # Nếu mà tìm kiếm khác ngày hôm nay thì phải ghi dữ liệu vào 1 file khác và request
 
-def tra_cuu_implement(nam, thang, ngay, vang):
-    today = datetime.today()
-    date_search = datetime.strftime(today, "%Y-%m-%d")
+def tra_cuu_implement(money):
+    print("Vo cho doc file de tra")
     filename = "data.json"
-    if nam + "-" + thang + "-" + ngay != date_search:
-        filename = "data1.json"
-        Luu_va_cap_nhat_du_lieu(nam, thang, ngay)
     f = open(filename, "r", encoding='utf-8-sig')
-    infor = json.load(f)
+    data = json.load(f)
     flag = False
+    print("BUOC TRA TRONG FILE JSON")
     try:
-        for name in infor['golds'][0]['value']:
-            if name['company'] + " " + name['brand'] == vang or name['brand'] == vang:
-                flag = True
-                reply = pickle.dumps(name)
-                conn.send(reply)
+        counter = 0
+        while counter < 20:
+            s = str(data["results"][counter]["currency"])
+            print(s)
+            if (s == money):
+                    flag = True
+                    reply = {"buy_cash":data["results"][counter]["buy_cash"] ,
+                            "buy_transfer":data["results"][counter]["buy_transfer"],
+                            "currency":money,
+                            "sell":data["results"][counter]["sell"]}
+                    print(reply)
+                    res_bytes = json.dumps(reply).encode('utf-8')
+                    print("GUI VE CHO CLIENT")
+                    conn.send(res_bytes)
+                    break
+            counter = counter + 1
 
         if flag == False:
             flag_not_success = {"id": -1} # tin nhắn không thành công format json
@@ -145,23 +139,29 @@ def tra_cuu_implement(nam, thang, ngay, vang):
 
 
 def tra_cuu(conn, addr):
+    print("Toi cho bat dau nhan thong tin tra")
     while True:
         try:
-            msg = conn.recv(1024).decode("utf8")
+            msg = conn.recv(1024).decode("utf8")   #lấy yêu cầu tra cứu hay thoát clien
+            print("BIEN MSG: ")
+            print(msg)
             if msg == "dung tra cuu":
                 return
-            msg_nam = conn.recv(1024).decode("utf8")
-            msg_thang = conn.recv(1024).decode("utf8")
-            msg_ngay = conn.recv(1024).decode("utf8")
-            msg_vang = conn.recv(1024).decode("utf8")
-            tra_cuu_implement(msg_nam, msg_thang, msg_ngay, msg_vang)
+            
+            print("Chuan bi lay xem m gui gi cho server")
+            msg_money = conn.recv(1024).decode("utf8")
+            #conn.recv(1024).decode("utf8")  #Thông tin loại tiền mà client yêu câuf
+            print("Tien hanh tra:  ")
+            print(msg_money)
+            tra_cuu_implement(msg_money)
+            print("DA QUAY VE HAM TRA CUU")
         except socket.error:
             return
 
 
 def client_exit(conn, addr):
     conn.close()
-    print(f"{addr} Da thoat khoi server")
+    print(f"{addr} da thoat khoi server")
 
 
 def handle_client(conn, addr):
@@ -171,16 +171,16 @@ def handle_client(conn, addr):
         try:
             command = conn.recv(1024).decode("utf8")
         except:
-            print(f'{addr} Đã thoát 1 cách đột ngột')
+            print(f'{addr} đã thoát 1 cách đột ngột')
             conn.close()
             break
 
         command = command.lower()
         print('[handle_client] run command:', command)
         if command == "dang ky":
-            Registration(conn, addr)
+            dang_ky(conn, addr)
         elif command == "dang nhap":
-            Login(conn, addr)
+            dang_nhap(conn, addr)
         elif command == "tra cuu":
             tra_cuu(conn, addr)
         elif command == "exit":
@@ -197,7 +197,8 @@ PORT = 65432
 print('Starting ...')
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
+             1)
 s.bind((HOST, PORT))
 s.listen()
 
