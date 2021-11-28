@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 import tkinter.messagebox
+from PIL import Image,ImageTk
 import socket
 import pickle
 from PIL import  Image,ImageTk
@@ -188,21 +189,54 @@ def registration_w():
         root.destroy()
         return
     reg_w = Toplevel(root)
-    entry1 = tk.Entry(reg_w, width=35)
+    reg_w.iconbitmap('dollar.ico')
+    reg_w.config(bg='white')
+    entry1 = tk.Entry(reg_w, width=35,font=("Arial", 12),fg='black',border=0,bg='white')
     entry1.insert(0, 'Nhập tên đăng nhâp ')
-    entry2 = tk.Entry(reg_w, show="*", width=35)
+    entry2 = tk.Entry(reg_w, show="*", width=35,font=("Arial", 12),fg='black',border=0,bg='white')
     entry2.insert(0, 'Nhập mật khẩu')
-    entry3 = tk.Entry(reg_w, show="*", width=35)
+    entry3 = tk.Entry(reg_w, show="*", width=35,font=("Arial", 12),fg='black',border=0,bg='white')
     entry3.insert(0, 'Nhập lại mật khẩu')
-    reg_w.geometry("300x300")
+    reg_w.geometry("400x300")
     reg_w.title("Đăng ký")
-    entry1.grid(row=1, column=1)
-    entry2.grid(row=2, column=1)
-    entry3.grid(row=3, column=1)
-    but_ok = tk.Button(reg_w, text="Đăng ký", command=lambda: registration(entry1, entry2, entry3, reg_w))
-    but_ok.grid(row=4, column=2)
-    reg_w.protocol("WM_DELETE_WINDOW", lambda: on_close(reg_w))
+    l2 = Label(reg_w,text="Sign up",font=("Arial", 23),fg='#ff4f5a',bg='white')
+    l2.place(x =135 ,y = 20)
+    def on_enter(e):
+        entry1.delete(0,'end')    
+    def on_leave(e):
+        if entry1.get()=='':   
+            entry1.insert(0,'Nhập tên đăng nhập')
+    entry1.pack()
+    entry1.bind("<FocusIn>", on_enter)
+    entry1.bind("<FocusOut>", on_leave)
+    entry1.place(relx=.5, rely=.3, anchor="center",width=200,height=30)
 
+    def on_enter(e):
+        entry2.delete(0,'end')    
+    def on_leave(e):
+        if entry2.get()=='':   
+            entry2.insert(0,'Nhập mật khẩu')
+    entry2.pack()
+    entry2.bind("<FocusIn>", on_enter)
+    entry2.bind("<FocusOut>", on_leave)
+    entry2.place(relx=.5, rely=.4, anchor="center",width=200,height=30)
+
+    def on_enter(e):
+        entry3.delete(0,'end')    
+    def on_leave(e):
+        if entry3.get()=='':   
+            entry3.insert(0,'Nhập lại mật khẩu')
+    entry3.pack()
+    entry3.bind("<FocusIn>", on_enter)
+    entry3.bind("<FocusOut>", on_leave)
+    entry3.place(relx=.5, rely=.5, anchor="center",width=200,height=30)
+    but_ok = tk.Button(reg_w, width=15,pady=4,text="Đăng ký",bg='#ff4f5a',fg='white',border=0, command=lambda: registration(entry1, entry2, entry3, reg_w))
+    but_ok.pack()
+    but_ok.place(relx=.5 ,rely=.7, anchor="center")
+    reg_w.protocol("WM_DELETE_WINDOW", lambda: on_close(reg_w))
+    Frame(reg_w,width=200,height=1.2,bg='black').place(x=97,y=100)
+    Frame(reg_w,width=200,height=1.2,bg='black').place(x=97,y=130)
+    Frame(reg_w,width=200,height=1.2,bg='black').place(x=97,y=160)
 
 def Login_w():
     msg = "dang nhap"
@@ -214,18 +248,40 @@ def Login_w():
         root.destroy()
         return
     log_w = Toplevel(root)
-    entry1 = tk.Entry(log_w, width=35)
+    log_w.iconbitmap('dollar.ico')
+    log_w.config(bg='white')
+    entry1 = tk.Entry(log_w, width=35,font=("Arial", 12),fg='black',border=0,bg='white' )
     entry1.insert(0, 'Nhập tên đăng nhâp ')
-    entry2 = tk.Entry(log_w, show="*", width=35)
+    entry2 = tk.Entry(log_w, show="*", width=35,font=("Arial", 12),fg='black',border=0,bg='white')
     entry2.insert(0, 'Nhập mật khẩu')
-    log_w.geometry("300x300")
+    log_w.geometry("400x300")
     log_w.title("Đăng nhập")
-    entry1.grid(row=1, column=1)
-    entry2.grid(row=2, column=1)
-    but_ok = tk.Button(log_w, text="Đăng nhập", command=lambda: Login(entry1, entry2, log_w))
-    but_ok.grid(row=3, column=2)
+    l2 = Label(log_w,text="Sign in",font=("Arial", 23),fg='#ff4f5a',bg='white')
+    l2.place(x =145,y = 20)
+    def on_enter(e):
+        entry1.delete(0,'end')    
+    def on_leave(e):
+        if entry1.get()=='':   
+            entry1.insert(0,'Nhập tên đăng nhập')
+    entry1.pack()
+    entry1.bind("<FocusIn>", on_enter)
+    entry1.bind("<FocusOut>", on_leave)
+    entry1.place(relx=.5, rely=.3, anchor="center",width=200,height=30)
+    def on_enter(e):
+        entry2.delete(0,'end')    
+    def on_leave(e):
+        if entry2.get()=='':   
+            entry2.insert(0,'Nhập tên đăng nhập')
+    entry2.pack()
+    entry2.bind("<FocusIn>", on_enter)
+    entry2.bind("<FocusOut>", on_leave)
+    entry2.place(relx=.5, rely=.4, anchor="center",width=200,height=30)
+    but_ok = tk.Button(log_w, width=15,pady=4 , text="Đăng nhập", bg='#ff4f5a',fg='white',border=0,command=lambda: Login(entry1, entry2, log_w))
+    but_ok.pack()
+    but_ok.place(relx=.5, rely=.6, anchor="center")
     log_w.protocol("WM_DELETE_WINDOW", lambda: on_close(log_w))
-
+    Frame(log_w,width=200,height=1.2,bg='black').place(x=97,y=100)
+    Frame(log_w,width=200,height=1.2,bg='black').place(x=97,y=130)
 
 def on_exit():
     msg = "exit"
@@ -237,24 +293,44 @@ def on_exit():
 # -------------main-----------------
 
 root = tk.Tk()
-root.geometry("900x500")
+root.geometry("900x700")
 root.title("App")
-img1=Image.open("gold_price.PNG")
+img1=Image.open("mainimage.PNG")
 test=ImageTk.PhotoImage(img1)
+root.iconbitmap('dollar.ico')
 label1 = tkinter.Label(image=test)
 label1.image = test
 label1.place(x=1,y=1)
-
-entry = tk.Entry()
-entry.insert(0,'Nhập ip')
-entry.grid(row=1, column=1)
-myButton_connect = tk.Button(text="Kết nối", command=ConnectToServer)
-myButton_connect.grid(row=1, column=2)
+def on_enter(e):
+        entry.delete(0,'end')    
+def on_leave(e):
+        if entry.get()=='':   
+            entry.insert(0,'Nhập tên đăng nhập')
+entry = tk.Entry(font=("Arial", 12),fg='black',bg='white')
+entry.place(relx=.5, rely=.3, anchor="center",width=300,height=30)
+entry.bind("<FocusIn>", on_enter)
+entry.bind("<FocusOut>", on_leave)
+entry.insert(0,'Press IP')
+myButton_connect = tk.Button(text="Conect", command=ConnectToServer,
+    bd=0,
+    relief="groove",
+    compound=tk.CENTER,
+    bg="black",
+    fg="white",
+    activeforeground="black",
+    activebackground="white",
+    font="arial 13",
+    pady=10,
+)
+red_buttom = tk.PhotoImage(file="red.png")
+red_buttom= red_buttom.subsample(1,1)
+myButton_connect.config(image=red_buttom)
+myButton_connect.place(relx=.7, rely=.3, anchor="center",width=96,height=30)
 myButton_regis = tk.Button(text="Đăng ký", command=registration_w)
-myButton_regis.grid(row=2, column=1)
+myButton_regis.place(relx=.5, rely=.4, anchor="center",width=150,height=30)
 myButton_login = tk.Button(text="Đăng nhập", command=Login_w)
-myButton_login.grid(row=3, column=1)
+myButton_login.place(relx=.5, rely=.5, anchor="center",width=150,height=30)
 myButton_Exit = tk.Button(text="Thoát", command=on_exit)
-myButton_Exit.grid(row=5, column=1)
+myButton_Exit.place(relx=.5, rely=.6, anchor="center",width=150,height=30)
 root.protocol("WM_DELETE_WINDOW", lambda: on_exit())
 root.mainloop()

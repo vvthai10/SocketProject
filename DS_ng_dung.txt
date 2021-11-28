@@ -6,3 +6,4 @@ admin5 nhk
 admin6 admin6
  
 dang ky dang ky
+exit 
