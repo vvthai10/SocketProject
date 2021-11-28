@@ -1,0 +1,14 @@
+admin1 admin1
+admin2 admin2
+admin3 admin3
+admin4 nhk
+admin5 nhk
+admin6 admin6
+<<<<<<< HEAD:DS_ng_dung.txt
+ 
+dang ky dang ky
+exit 
+=======
+123 123
+456 456
+>>>>>>> 51d5508fde318616963e6a02806e2253b1b82aa7:ListAccount.txt

@@ -1,93 +1,120 @@
-# Cái điều khiển đó thì sau sửa lại. Cái đầu tiên vào là menu. Sau khi kích vào menu thì nó mới là câu lệnh bình thường
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 import tkinter.messagebox
 from PIL import Image,ImageTk
 import socket
+import json
 import pickle
 from PIL import  Image,ImageTk
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-# -------------func-------------
+# =============================FUNCTION============================
 
-def ConnectToServer():
+def connectToServer():
     HOST = entry.get()
     PORT = 65432
     test = True
     try:
-        s.connect((HOST, PORT))
+        client.connect((HOST, PORT))
     except Exception as e:
-        tkinter.messagebox.showerror(title="Lỗi", message="Lỗi kết nối đến server")
+        tkinter.messagebox.showerror(title="Error", message="Unable to connect to server.")
         test = False
     if test:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Đã kết nối tới server thành công")
+        tkinter.messagebox.showinfo(title="Notification", message="Connected to the server.")
 
-
-def stop_tra_cuu(child_windown):
-    msg = "dung tra cuu"
+def stopLookup(child_windown):
+    msgRequest = "stop lookup"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msgRequest, "utf8"))
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
     child_windown.destroy()
 
 
-def tra_cuu(entry1, entry2, entry3, entry4, tree, child_windown):
+def LookUp(entry, tree, child_windown):
     try:
-        s.sendall(bytes("tiep tuc", "utf8"))
-        nam = entry1.get()
-        s.sendall(bytes(nam, "utf8"))
-        thang = entry2.get()
-        s.sendall(bytes(thang, "utf8"))
-        ngay = entry3.get()
-        s.sendall(bytes(ngay, "utf8"))
-        vang = entry4.get()
-        s.sendall(bytes(vang, "utf8"))
+        isContinue = "continue"
+        currency = entry.get()  #lấy thông tin loại tiền muốn tra cứu
+        
+        client.sendall(bytes(isContinue, "utf8"))
+        client.sendall(bytes(currency, "utf8"))
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
+    #Thực hiện nhiều lần yêu cầu của người dùng.
     i = 1
     while True:
-        result = s.recv(3072)
-        dist = pickle.loads(result)
-        if dist == {"id": 0}:
+        #3072
+        resultServer = client.recv(1024)
+        #Chuyển kết quả từ bytes sang kiểu dict
+        
+        result = json.loads(resultServer.decode('ISO-8859-1'))
+        if result == {"id": 0}:
             break
-        elif dist == {"id": -1}:
+        elif result == {"id": -1}:
+            #HÌNH NHƯ MÌNH KHÔNG CẦN THÊM CÁI NÀY.
             tkinter.messagebox.showinfo("Thông báo","Tên này không tồn tại, hãy đảm bảo tên vàng bạn cần tìm là chính xác")
             break
         else:
-            print(dist)
-            tree.insert(parent='', index='end', text="Item_" + str(i), values=(
-            dist['company'] + " " + dist['brand'], dist['buy'], dist['sell'], dist['type'], dist['updated']))
+            tree.insert(parent='', index='end', text="Item_" + str(i), 
+                        values=(result['currency'], result['buy_cash'], result['buy_transfer'], result['sell']))
         i = i + 1
 
+def dropDownList(window):
+    OPTIONS = [
+        "AUD",
+        "CAD",
+        "CHF",
+        "CNY",
+        "DKK",
+        "EUR",
+        "GBP",
+        "HKD",
+        "INR",
+        "JPY",
+        "KRW",
+        "KWD",
+        "MYR",
+        "NOK",
+        "RUB",
+        "SAR",
+        "SEK",
+        "SGD",
+        "THB",
+        "USD"
+    ] 
+    variable = StringVar(window)
+    variable.set(OPTIONS[0])
+    menu = OptionMenu(window, variable, *OPTIONS)
 
-def tra_cuu_w():
-    msg = "tra cuu"
+    return [menu,variable]
+
+
+def LookUpUI():
+    msgRequest = "lookup"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msgRequest, "utf8"))
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
-    child_windown = Toplevel(root)
-    child_windown.title("App")
-    child_windown.geometry("1200x300")
-    columns = ('Tên công ty', 'Mua', 'Bán', 'Loại', 'Ngày')
-    tree = ttk.Treeview(child_windown, columns=columns)
+    mainWindown = Toplevel(root)
+    mainWindown.title("App")
+    mainWindown.geometry("1200x300")
+    columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
+    tree = ttk.Treeview(mainWindown, columns=columns)
     tree.heading('#0', text='STT')
-    tree.heading('#1', text='Tên công ty')
-    tree.heading('#2', text='Mua')
-    tree.heading('#3', text='Bán')
-    tree.heading('#4', text='Loại')
-    tree.heading('#5', text='Ngày')
+    tree.heading('#1', text='Currency')
+    tree.heading('#2', text='Buy Cash')
+    tree.heading('#3', text='Buy Transfer')
+    tree.heading('#4', text='Sell')
 
     # Specify attributes of the columns
     tree.column('#0', stretch=tk.YES)
@@ -95,99 +122,94 @@ def tra_cuu_w():
     tree.column('#2', stretch=tk.YES)
     tree.column('#3', stretch=tk.YES)
     tree.column('#4', stretch=tk.YES)
-    tree.column('#5', stretch=tk.YES)
     tree.grid(row=5, columnspan=4, sticky='nsew')
 
-    # add button
-    entry1 = tk.Entry(child_windown, width=15)
-    entry1.insert(0, 'năm')
-    entry2 = tk.Entry(child_windown, width=15)
-    entry2.insert(0, 'tháng')
-    entry3 = tk.Entry(child_windown, width=15)
-    entry3.insert(0, 'ngày')
-    entry4 = tk.Entry(child_windown, width=35)
-    entry4.insert(0, 'Nhập tên vàng')
-    butt_search = tk.Button(child_windown, text='Tra cứu',
-                            command=lambda: tra_cuu(entry1, entry2, entry3, entry4, tree, child_windown))
-    butt_thoat = tk.Button(child_windown, text="Thoát", command=lambda: stop_tra_cuu(child_windown))
-    entry1.grid(row=1, column=1)
-    entry2.grid(row=1, column=2)
-    entry3.grid(row=1, column=3)
-    entry4.grid(row=2, column=1)
-    butt_search.grid(row=3, column=2)
-    butt_thoat.grid(row=3, column=3)
+    option = dropDownList(mainWindown)
+    dropdown = option[0] # Đây là cái list tiền
+    entry = option[1] # Đây là loại tiền mình muốn tra cứu
+    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(entry, tree, mainWindown))
+    buttonExit = tk.Button(mainWindown, text="Exit", command=lambda: stopLookup(mainWindown))
+    
+    dropdownLabel = tk.Label(mainWindown, text = "Choose Currency")
+    dropdownLabel.grid(row=2, column=1)
+    dropdown.grid(row=2, column=2)
+    buttonSearch.grid(row=3, column=2)
+    buttonExit.grid(row=3, column=3)
     #     =====================================
-    child_windown.protocol("WM_DELETE_WINDOW", lambda: stop_tra_cuu(child_windown))
+    mainWindown.protocol("WM_DELETE_WINDOW", lambda: stopLookup(mainWindown))
 
 
-def registration(entry1, entry2, entry3, reg_w):
+def Registration(entry1, entry2, entry3, registerUI):
     try:
-        s.sendall(bytes("tiep tuc", "utf8"))
+        client.sendall(bytes("continue", "utf8"))
         username = entry1.get()
-        s.sendall(bytes(username, "utf8"))
+        client.sendall(bytes(username, "utf8"))
         password = entry2.get()
-        s.sendall(bytes(password, "utf8"))
-        password_agian = entry3.get()
-        s.sendall(bytes(password_agian, "utf8"))
-        notice = s.recv(1024).decode("utf8")
+        client.sendall(bytes(password, "utf8"))
+        passwordRep = entry3.get()
+        client.sendall(bytes(passwordRep, "utf8"))
+
+        noticeServer = client.recv(1024).decode("utf8")
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
-    if notice == "Dang ky thanh cong" and password_agian == password:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Đăng ký thành công")
-        reg_w.destroy()
-
+        #if noticeServer == "Account created successfully" and passwordRep == password:
+    if noticeServer == "Account created successfully":
+        tkinter.messagebox.showinfo(title="Notification", message="Account created successfully.")
+        registerUI.destroy()
+    elif noticeServer == "Passwords aren't the same":
+        tkinter.messagebox.showerror(title="Error", message="Passwords aren't the same.")
     else:
-        tkinter.messagebox.showerror(title="Lỗi",
-                                     message="Tên dăng nhập đã tồn tại hoặc mật khẩu nhập lại không đúng. Hãy thử lại")
+        tkinter.messagebox.showerror(title="Error", message="Username available.")
         entry1.delete(0, 'end')
         entry2.delete(0, 'end')
         entry3.delete(0, 'end')
 
 
-def Login(entry1, entry2, log_w):
+def Login(entry1, entry2, loginUI):
     try:
-        s.sendall(bytes("tiep tuc", "utf8"))
+        client.sendall(bytes("continue", "utf8"))
         username = entry1.get()
-        s.sendall(bytes(username, "utf8"))
+        print(username)
+        client.sendall(bytes(username, "utf8"))
         password = entry2.get()
-        s.sendall(bytes(password, "utf8"))
-        notice = s.recv(1024).decode("utf8")
+        print(password)
+        client.sendall(bytes(password, "utf8"))
+        noticeServer = client.recv(1024).decode("utf8")
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
-    if notice == "Ban da dang nhap thanh cong":
-        tkinter.messagebox.showinfo(title="Thông báo", message="Đăng nhập thành công")
-        log_w.destroy()
+    if noticeServer == "Login successfully":
+        tkinter.messagebox.showinfo(title="Notification", message="Login successfully.")
+        loginUI.destroy()
         # Đăng nhập thành công thì được vào để tra cứu
-        tra_cuu_w()
+        LookUpUI()
     else:
-
-        tkinter.messagebox.showerror(title="Lỗi",
-                                     message="Tên dăng nhập hoặc mật khẩu không đúng. Hãy thử lại")
+        tkinter.messagebox.showinfo(title="Error", message="Account doesn't exist.")
         entry1.delete(0, 'end')
         entry2.delete(0, 'end')
 
 
-def on_close(log_w):
-    s.sendall(bytes("break", "utf8"))
-    log_w.destroy()
+def isClose(userUI):
+    client.sendall(bytes("break", "utf8"))
+    userUI.destroy()
 
 
 # =============Viết GUI cho đăng kí và đăng nhập=============
-def registration_w():
-    msg = "dang ky"
+def RegistrationUI():
+    msgRequest = "register"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msgRequest, "utf8"))
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
+<<<<<<< HEAD
     reg_w = Toplevel(root)
     reg_w.iconbitmap('dollar.ico')
     reg_w.config(bg='white')
@@ -210,6 +232,23 @@ def registration_w():
     entry1.bind("<FocusIn>", on_enter)
     entry1.bind("<FocusOut>", on_leave)
     entry1.place(relx=.5, rely=.3, anchor="center",width=200,height=30)
+=======
+    registerUI = Toplevel(root)
+    entry1 = tk.Entry(registerUI, width=35)
+    entry1.insert(0, 'Nhập tên đăng nhâp ')
+    entry2 = tk.Entry(registerUI, show="*", width=35)
+    entry2.insert(0, 'Nhập mật khẩu')
+    entry3 = tk.Entry(registerUI, show="*", width=35)
+    entry3.insert(0, 'Nhập lại mật khẩu')
+    registerUI.geometry("300x300")
+    registerUI.title("Đăng ký")
+    entry1.grid(row=1, column=1)
+    entry2.grid(row=2, column=1)
+    entry3.grid(row=3, column=1)
+    but_ok = tk.Button(registerUI, text="Đăng ký", command=lambda: Registration(entry1, entry2, entry3, registerUI))
+    but_ok.grid(row=4, column=2)
+    registerUI.protocol("WM_DELETE_WINDOW", lambda: isClose(registerUI))
+>>>>>>> 51d5508fde318616963e6a02806e2253b1b82aa7
 
     def on_enter(e):
         entry2.delete(0,'end')    
@@ -238,15 +277,16 @@ def registration_w():
     Frame(reg_w,width=200,height=1.2,bg='black').place(x=97,y=130)
     Frame(reg_w,width=200,height=1.2,bg='black').place(x=97,y=160)
 
-def Login_w():
-    msg = "dang nhap"
+def LoginUI():
+    msgRequest = "login"
     try:
-        s.sendall(bytes(msg, "utf8"))
+        client.sendall(bytes(msgRequest, "utf8"))
     except socket.error:
-        tkinter.messagebox.showinfo(title="Thông báo", message="Server đã đóng kết nối")
-        s.close()
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
         root.destroy()
         return
+<<<<<<< HEAD
     log_w = Toplevel(root)
     log_w.iconbitmap('dollar.ico')
     log_w.config(bg='white')
@@ -282,11 +322,26 @@ def Login_w():
     log_w.protocol("WM_DELETE_WINDOW", lambda: on_close(log_w))
     Frame(log_w,width=200,height=1.2,bg='black').place(x=97,y=100)
     Frame(log_w,width=200,height=1.2,bg='black').place(x=97,y=130)
+=======
+    loginUI = Toplevel(root)
+    entry1 = tk.Entry(loginUI, width=35)
+    entry1.insert(0, 'Nhập tên đăng nhâp ')
+    entry2 = tk.Entry(loginUI, show="*", width=35)
+    entry2.insert(0, 'Nhập mật khẩu')
+    loginUI.geometry("300x300")
+    loginUI.title("Đăng nhập")
+    entry1.grid(row=1, column=1)
+    entry2.grid(row=2, column=1)
+    but_ok = tk.Button(loginUI, text="Đăng nhập", command=lambda: Login(entry1, entry2, loginUI))
+    but_ok.grid(row=3, column=2)
+    loginUI.protocol("WM_DELETE_WINDOW", lambda: isClose(loginUI))
 
-def on_exit():
-    msg = "exit"
-    s.sendall(bytes(msg, "utf8"))
-    s.close()
+>>>>>>> 51d5508fde318616963e6a02806e2253b1b82aa7
+
+def isExit():
+    msgRequest = "exit"
+    client.sendall(bytes(msgRequest, "utf8"))
+    client.close()
     root.destroy()
 
 
@@ -301,6 +356,7 @@ root.iconbitmap('dollar.ico')
 label1 = tkinter.Label(image=test)
 label1.image = test
 label1.place(x=1,y=1)
+<<<<<<< HEAD
 def on_enter(e):
         entry.delete(0,'end')    
 def on_leave(e):
@@ -333,4 +389,19 @@ myButton_login.place(relx=.5, rely=.5, anchor="center",width=150,height=30)
 myButton_Exit = tk.Button(text="Thoát", command=on_exit)
 myButton_Exit.place(relx=.5, rely=.6, anchor="center",width=150,height=30)
 root.protocol("WM_DELETE_WINDOW", lambda: on_exit())
+=======
+
+entry = tk.Entry()
+entry.insert(0,'Nhập ip')
+entry.grid(row=1, column=1)
+myButton_connect = tk.Button(text="CONNECT", command=connectToServer)
+myButton_connect.grid(row=1, column=2)
+myButton_regis = tk.Button(text="REGISTER", command=RegistrationUI)
+myButton_regis.grid(row=2, column=1)
+myButton_login = tk.Button(text="LOGIN", command=LoginUI)
+myButton_login.grid(row=3, column=1)
+myButton_Exit = tk.Button(text="EXIT", command=isExit)
+myButton_Exit.grid(row=5, column=1)
+root.protocol("WM_DELETE_WINDOW", lambda: isExit())
+>>>>>>> 51d5508fde318616963e6a02806e2253b1b82aa7
 root.mainloop()
