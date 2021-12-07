@@ -11,15 +11,15 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # =============================FUNCTION============================
 
 def connectToServer():
-    HOST = entry.get()
+    HOST = MainEntry.get()
     PORT = 65432
-    test = True
+    ImageScr = True
     try:
         client.connect((HOST, PORT))
     except Exception as e:
         tkinter.messagebox.showerror(title="Error", message="Unable to connect to server.")
-        test = False
-    if test:
+        ImageScr = False
+    if ImageScr:
         tkinter.messagebox.showinfo(title="Notification", message="Connected to the server.")
 
 def stopLookup(child_windown):
@@ -34,10 +34,10 @@ def stopLookup(child_windown):
     child_windown.destroy()
 
 
-def LookUp(entry, tree, child_windown):
+def LookUp(MainEntry, tree, child_windown):
     try:
         isContinue = "continue"
-        currency = entry.get()  #lấy thông tin loại tiền muốn tra cứu
+        currency = MainEntry.get()  #lấy thông tin loại tiền muốn tra cứu
         
         client.sendall(bytes(isContinue, "utf8"))
         client.sendall(bytes(currency, "utf8"))
@@ -125,8 +125,8 @@ def LookUpUI():
 
     option = dropDownList(mainWindown)
     dropdown = option[0] # Đây là cái list tiền
-    entry = option[1] # Đây là loại tiền mình muốn tra cứu
-    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(entry, tree, mainWindown))
+    MainEntry = option[1] # Đây là loại tiền mình muốn tra cứu
+    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(MainEntry, tree, mainWindown))
     buttonExit = tk.Button(mainWindown, text="Exit", command=lambda: stopLookup(mainWindown))
     
     dropdownLabel = tk.Label(mainWindown, text = "Choose Currency")
@@ -138,14 +138,14 @@ def LookUpUI():
     mainWindown.protocol("WM_DELETE_WINDOW", lambda: stopLookup(mainWindown))
 
 
-def Registration(entry1, entry2, entry3, registerUI):
+def Registration(UsernameEntry, PassEntry, PassAgianEntry, registerUI):
     try:
         client.sendall(bytes("continue", "utf8"))
-        username = entry1.get()
+        username = UsernameEntry.get()
         client.sendall(bytes(username, "utf8"))
-        password = entry2.get()
+        password = PassEntry.get()
         client.sendall(bytes(password, "utf8"))
-        passwordRep = entry3.get()
+        passwordRep = PassAgianEntry.get()
         client.sendall(bytes(passwordRep, "utf8"))
 
         noticeServer = client.recv(1024).decode("utf8")
@@ -162,18 +162,18 @@ def Registration(entry1, entry2, entry3, registerUI):
         tkinter.messagebox.showerror(title="Error", message="Passwords aren't the same.")
     else:
         tkinter.messagebox.showerror(title="Error", message="Username available.")
-        entry1.delete(0, 'end')
-        entry2.delete(0, 'end')
-        entry3.delete(0, 'end')
+        UsernameEntry.delete(0, 'end')
+        PassEntry.delete(0, 'end')
+        PassAgianEntry.delete(0, 'end')
 
 
-def Login(entry1, entry2, loginUI):
+def Login(UsernameEntry, PassEntry, loginUI):
     try:
         client.sendall(bytes("continue", "utf8"))
-        username = entry1.get()
+        username = UsernameEntry.get()
         print(username)
         client.sendall(bytes(username, "utf8"))
-        password = entry2.get()
+        password = PassEntry.get()
         print(password)
         client.sendall(bytes(password, "utf8"))
         noticeServer = client.recv(1024).decode("utf8")
@@ -189,8 +189,8 @@ def Login(entry1, entry2, loginUI):
         LookUpUI()
     else:
         tkinter.messagebox.showinfo(title="Error", message="Account doesn't exist.")
-        entry1.delete(0, 'end')
-        entry2.delete(0, 'end')
+        UsernameEntry.delete(0, 'end')
+        PassEntry.delete(0, 'end')
 
 
 def isClose(userUI):
@@ -209,20 +209,55 @@ def RegistrationUI():
         root.destroy()
         return
     registerUI = Toplevel(root)
-    entry1 = tk.Entry(registerUI, width=35)
-    entry1.insert(0, 'Nhập tên đăng nhâp ')
-    entry2 = tk.Entry(registerUI, show="*", width=35)
-    entry2.insert(0, 'Nhập mật khẩu')
-    entry3 = tk.Entry(registerUI, show="*", width=35)
-    entry3.insert(0, 'Nhập lại mật khẩu')
-    registerUI.geometry("300x300")
+    registerUI.iconbitmap('dollar.ico')
+    registerUI.config(bg='white')
+    UsernameEntry = tk.Entry(registerUI, width=35,font=("Arial", 12),fg='black',border=0,bg='white')
+    UsernameEntry.insert(0, 'Nhập tên đăng nhâp ')
+    PassEntry = tk.Entry(registerUI, show="*", width=35,font=("Arial", 12),fg='black',border=0,bg='white')
+    PassEntry.insert(0, 'Nhập mật khẩu')
+    PassAgianEntry = tk.Entry(registerUI, show="*", width=35,font=("Arial", 12),fg='black',border=0,bg='white')
+    PassAgianEntry.insert(0, 'Nhập lại mật khẩu')
+    registerUI.geometry("400x300")
     registerUI.title("Đăng ký")
-    entry1.grid(row=1, column=1)
-    entry2.grid(row=2, column=1)
-    entry3.grid(row=3, column=1)
-    but_ok = tk.Button(registerUI, text="Đăng ký", command=lambda: Registration(entry1, entry2, entry3, registerUI))
-    but_ok.grid(row=4, column=2)
+    RegisLabel = Label(registerUI,text="Sign up",font=("Arial", 23),fg='#ff4f5a',bg='white')
+    RegisLabel.place(x =135 ,y = 20)
+    def on_enter(e):
+        UsernameEntry.delete(0,'end')    
+    def on_leave(e):
+        if UsernameEntry.get()=='':   
+            UsernameEntry.insert(0,'Nhập tên đăng nhập')
+    UsernameEntry.pack()
+    UsernameEntry.bind("<FocusIn>", on_enter)
+    UsernameEntry.bind("<FocusOut>", on_leave)
+    UsernameEntry.place(relx=.5, rely=.3, anchor="center",width=200,height=30)
+
+    def on_enter(e):
+        PassEntry.delete(0,'end')    
+    def on_leave(e):
+        if PassEntry.get()=='':   
+            PassEntry.insert(0,'Nhập mật khẩu')
+    PassEntry.pack()
+    PassEntry.bind("<FocusIn>", on_enter)
+    PassEntry.bind("<FocusOut>", on_leave)
+    PassEntry.place(relx=.5, rely=.4, anchor="center",width=200,height=30)
+
+    def on_enter(e):
+        PassAgianEntry.delete(0,'end')    
+    def on_leave(e):
+        if PassAgianEntry.get()=='':   
+            PassAgianEntry.insert(0,'Nhập lại mật khẩu')
+    PassAgianEntry.pack()
+    PassAgianEntry.bind("<FocusIn>", on_enter)
+    PassAgianEntry.bind("<FocusOut>", on_leave)
+    PassAgianEntry.place(relx=.5, rely=.5, anchor="center",width=200,height=30)
+
+    SignupButtom = tk.Button(registerUI, width=15,pady=4,text="Đăng ký",bg='#ff4f5a',fg='white',border=0, command=lambda: Registration(UsernameEntry, PassEntry, PassAgianEntry, registerUI))
+    SignupButtom.pack()
+    SignupButtom.place(relx=.5 ,rely=.7, anchor="center")
     registerUI.protocol("WM_DELETE_WINDOW", lambda: isClose(registerUI))
+    Frame(registerUI,width=200,height=1.2,bg='black').place(x=97,y=100)
+    Frame(registerUI,width=200,height=1.2,bg='black').place(x=97,y=130)
+    Frame(registerUI,width=200,height=1.2,bg='black').place(x=97,y=160)
 
 
 def LoginUI():
@@ -235,17 +270,40 @@ def LoginUI():
         root.destroy()
         return
     loginUI = Toplevel(root)
-    entry1 = tk.Entry(loginUI, width=35)
-    entry1.insert(0, 'Nhập tên đăng nhâp ')
-    entry2 = tk.Entry(loginUI, show="*", width=35)
-    entry2.insert(0, 'Nhập mật khẩu')
-    loginUI.geometry("300x300")
+    loginUI.iconbitmap('dollar.ico')
+    loginUI.config(bg='white')
+    UsernameEntry = tk.Entry(loginUI, width=35,font=("Arial", 12),fg='black',border=0,bg='white' )
+    UsernameEntry.insert(0, 'Nhập tên đăng nhâp ')
+    PassEntry = tk.Entry(loginUI, show="*", width=35,font=("Arial", 12),fg='black',border=0,bg='white')
+    PassEntry.insert(0, 'Nhập mật khẩu')
+    loginUI.geometry("400x300")
     loginUI.title("Đăng nhập")
-    entry1.grid(row=1, column=1)
-    entry2.grid(row=2, column=1)
-    but_ok = tk.Button(loginUI, text="Đăng nhập", command=lambda: Login(entry1, entry2, loginUI))
-    but_ok.grid(row=3, column=2)
+    LoginLabel = Label(loginUI,text="Sign in",font=("Arial", 23),fg='#ff4f5a',bg='white')
+    LoginLabel.place(x =145,y = 20)
+    def on_enter(e):
+        UsernameEntry.delete(0,'end')    
+    def on_leave(e):
+        if UsernameEntry.get()=='':   
+            UsernameEntry.insert(0,'Nhập tên đăng nhập')
+    UsernameEntry.pack()
+    UsernameEntry.bind("<FocusIn>", on_enter)
+    UsernameEntry.bind("<FocusOut>", on_leave)
+    UsernameEntry.place(relx=.5, rely=.3, anchor="center",width=200,height=30)
+    def on_enter(e):
+        PassEntry.delete(0,'end')    
+    def on_leave(e):
+        if PassEntry.get()=='':   
+            PassEntry.insert(0,'Nhập tên đăng nhập')
+    PassEntry.pack()
+    PassEntry.bind("<FocusIn>", on_enter)
+    PassEntry.bind("<FocusOut>", on_leave)
+    PassEntry.place(relx=.5, rely=.4, anchor="center",width=200,height=30)
+    SigninButtom = tk.Button(loginUI, width=15,pady=4 , text="Đăng nhập", bg='#ff4f5a',fg='white',border=0,command=lambda: Login(UsernameEntry, PassEntry, loginUI))
+    SigninButtom.pack()
+    SigninButtom.place(relx=.5, rely=.6, anchor="center")
     loginUI.protocol("WM_DELETE_WINDOW", lambda: isClose(loginUI))
+    Frame(loginUI,width=200,height=1.2,bg='black').place(x=97,y=100)
+    Frame(loginUI,width=200,height=1.2,bg='black').place(x=97,y=130)
 
 
 def isExit():
@@ -260,22 +318,42 @@ def isExit():
 root = tk.Tk()
 root.geometry("900x500")
 root.title("App")
-img1=Image.open("gold_price.PNG")
-test=ImageTk.PhotoImage(img1)
-label1 = tkinter.Label(image=test)
-label1.image = test
-label1.place(x=1,y=1)
-
-entry = tk.Entry()
-entry.insert(0,'Nhập ip')
-entry.grid(row=1, column=1)
-myButton_connect = tk.Button(text="CONNECT", command=connectToServer)
-myButton_connect.grid(row=1, column=2)
-myButton_regis = tk.Button(text="REGISTER", command=RegistrationUI)
-myButton_regis.grid(row=2, column=1)
-myButton_login = tk.Button(text="LOGIN", command=LoginUI)
-myButton_login.grid(row=3, column=1)
-myButton_Exit = tk.Button(text="EXIT", command=isExit)
-myButton_Exit.grid(row=5, column=1)
+MainImage=Image.open("gold_price.PNG")
+ImageScr=ImageTk.PhotoImage(MainImage)
+root.iconbitmap('dollar.ico')
+MainLabel = tkinter.Label(image=ImageScr)
+MainLabel.image = ImageScr
+MainLabel.place(x=1,y=1)
+def on_enter(e):
+        MainEntry.delete(0,'end')    
+def on_leave(e):
+        if MainEntry.get()=='':   
+            MainEntry.insert(0,'Nhập tên đăng nhập')
+MainEntry = tk.Entry(font=("Arial", 12),fg='black',bg='white')
+MainEntry.place(relx=.5, rely=.3, anchor="center",width=300,height=30)
+MainEntry.bind("<FocusIn>", on_enter)
+MainEntry.bind("<FocusOut>", on_leave)
+MainEntry.insert(0,'Press IP')
+ButtomConnect = tk.Button(text="Conect", command=connectToServer,
+    bd=0,
+    relief="groove",
+    compound=tk.CENTER,
+    bg="black",
+    fg="white",
+    activeforeground="black",
+    activebackground="white",
+    font="arial 13",
+    pady=10,
+)
+RedButtom = tk.PhotoImage(file="red.png")
+RedButtom= RedButtom.subsample(1,1)
+ButtomConnect.config(image=RedButtom)
+ButtomConnect.place(relx=.7, rely=.3, anchor="center",width=96,height=30)
+ButtomRegister = tk.Button(text="Đăng ký", command=RegistrationUI,font=("Klavika", 13, 'bold') ,bg="green2",fg='white',border=0)
+ButtomRegister.place(relx=.5, rely=.4, anchor="center",width=250,height=30)
+ButtomLogin = tk.Button(text="Đăng nhập", command=LoginUI,font=("Klavika",13, 'bold'),bg="blue",fg='white',border=0)
+ButtomLogin.place(relx=.5, rely=.5, anchor="center",width=250,height=30)
+ButtomExit = tk.Button(text="Thoát", command=isExit,bg='#ff4f5a',fg='white',border=0)
+ButtomExit.place(relx=.5, rely=.6, anchor="center",width=150,height=30)
 root.protocol("WM_DELETE_WINDOW", lambda: isExit())
 root.mainloop()
