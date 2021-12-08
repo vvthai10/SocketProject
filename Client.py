@@ -34,13 +34,35 @@ def stopLookup(child_windown):
     child_windown.destroy()
 
 
-def LookUp(MainEntry, tree, child_windown):
+def LookUp(currency, day, month, year, tree ):   #, child_windown
     try:
         isContinue = "continue"
-        currency = MainEntry.get()  #lấy thông tin loại tiền muốn tra cứu
+                     
+        getCurrency = currency.get()  #lấy thông tin loại tiền muốn tra cứu
+        getDay = day.get()
+        getMonth = month.get()
+        getYear = year.get()
+
+        if(len(getDay) == 1):
+            getDay = "0" + getDay
+        if(len(getMonth) == 1):
+            getMonth = "0" + getMonth
         
+        print(getCurrency)
+        print(getDay)
+        print(getMonth)
+        print(getYear)
+        #================
+        print("GỬI DÒNG 1")
         client.sendall(bytes(isContinue, "utf8"))
-        client.sendall(bytes(currency, "utf8"))
+        print("GỬI DÒNG 2")
+        client.sendall(bytes(getCurrency, "utf8"))
+        print("GỬI DÒNG 3")
+        client.sendall(bytes(getDay, "utf8"))
+        print("GỬI DÒNG 4")
+        client.sendall(bytes(getMonth, "utf8"))
+        print("GỬI DÒNG 5")
+        client.sendall(bytes(getYear, "utf8"))
     except socket.error:
         tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
         client.close()
@@ -58,10 +80,10 @@ def LookUp(MainEntry, tree, child_windown):
             break
         elif result == {"id": -1}:
             #HÌNH NHƯ MÌNH KHÔNG CẦN THÊM CÁI NÀY.
-            tkinter.messagebox.showinfo("Thông báo","Tên này không tồn tại, hãy đảm bảo tên vàng bạn cần tìm là chính xác")
+            tkinter.messagebox.showinfo("Thông báo","Thời gian bạn yêu cầu không có, hãy đảm bảo thời gian chính xác.")
             break
         else:
-            tree.insert(parent='', index='end', text="Item_" + str(i), 
+            tree.insert(parent='', index='end', text = "" + str(i), 
                         values=(result['currency'], result['buy_cash'], result['buy_transfer'], result['sell']))
         i = i + 1
 
@@ -95,7 +117,7 @@ def dropDownList(window):
     return [menu,variable]
 
 
-def LookUpUI():
+def LookUpUI(dayFirst, monthFirst, yearFirst):
     msgRequest = "lookup"
     try:
         client.sendall(bytes(msgRequest, "utf8"))
@@ -123,10 +145,29 @@ def LookUpUI():
     tree.column('#4', stretch=tk.YES)
     tree.grid(row=5, columnspan=4, sticky='nsew')
 
+    #===============================
+    inputDay = tk.Entry(mainWindown, width=15)
+    inputDay.insert(0, 'Day')
+    inputMonth = tk.Entry(mainWindown, width=15)
+    inputMonth.insert(0, 'Month')
+    inputYear = tk.Entry(mainWindown, width=15)
+    inputYear.insert(0, 'Year')
+    #=========================================
+    inputDay.grid(row=1, column=1)
+    inputMonth.grid(row=1, column=2)
+    inputYear.grid(row=1, column=3)
+    #==================================================
+    #label = tk.Label(app, bg="white", pady=5, font=(None, 1), height=20, width=720)
+    msgWarning = tk.Label(mainWindown, bg = "red", text = "You can only look up the date:" 
+                                                + str(dayFirst) + "/" 
+                                                + str(monthFirst) + "/"  
+                                                + str(yearFirst))
+    msgWarning.grid(row = 3, column = 4)
+
     option = dropDownList(mainWindown)
     dropdown = option[0] # Đây là cái list tiền
-    MainEntry = option[1] # Đây là loại tiền mình muốn tra cứu
-    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(MainEntry, tree, mainWindown))
+    inputCurrency = option[1] # Đây là loại tiền mình muốn tra cứu
+    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(inputCurrency, inputDay, inputMonth, inputYear, tree)) #, mainWindown
     buttonExit = tk.Button(mainWindown, text="Exit", command=lambda: stopLookup(mainWindown))
     
     dropdownLabel = tk.Label(mainWindown, text = "Choose Currency")
@@ -183,10 +224,15 @@ def Login(UsernameEntry, PassEntry, loginUI):
         root.destroy()
         return
     if noticeServer == "Login successfully":
+        #KHI ĐĂNG NHẬP THÀNH CÔNG< NHẬN THÔNG TIN XEM GIỚI HẠN NGÀY TRA CỨU.
+        dayFirst = client.recv(1024).decode("utf8")
+        monthFirst = client.recv(1024).decode("utf8")
+        yearFirst = client.recv(1024).decode("utf8")
+        print(dayFirst, " + ", monthFirst, " + ", yearFirst)
         tkinter.messagebox.showinfo(title="Notification", message="Login successfully.")
         loginUI.destroy()
         # Đăng nhập thành công thì được vào để tra cứu
-        LookUpUI()
+        LookUpUI(dayFirst, monthFirst, yearFirst)
     else:
         tkinter.messagebox.showinfo(title="Error", message="Account doesn't exist.")
         UsernameEntry.delete(0, 'end')

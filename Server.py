@@ -11,6 +11,20 @@ from datetime import datetime
 from requests.structures import CaseInsensitiveDict 
 # --- functions ---
 
+def getDateFirst():
+    filename = "data.json"
+    f = open(filename, "r", encoding='utf-8-sig')
+    data = json.load(f)
+    
+    inforFirst = list(data.keys())[0]
+
+    day = inforFirst[7 : 9]
+    month = inforFirst[9 : 11]
+    year = inforFirst[11 : 15]
+   
+    f.close()
+    return day, month, year
+
 def Registration(conn, addr):
     fileAccountWrite = open('ListAccount.txt', 'a')
     try:
@@ -55,7 +69,12 @@ def LogIn(conn, addr):
             while fileAccountRead.tell() != os.fstat(fileAccountRead.fileno()).st_size:
                 line = fileAccountRead.readline()
                 if line == usernameRecv + " " + passwordRecv + "\n":
-                    conn.sendall(bytes("Login successfully", "utf8"))
+                    conn.sendall(bytes("Login successfully", "utf8"))#=====================================
+                    day, month, year = getDateFirst()
+                    conn.sendall(bytes(day, "utf8"))
+                    conn.sendall(bytes(month, "utf8"))
+                    conn.sendall(bytes(year, "utf8"))
+                    #======================================
                     success = True
                     fileAccountRead.close()
                     break
@@ -100,51 +119,75 @@ def updateFileDataAfter30():
 
 # Nếu mà tìm kiếm khác ngày hôm nay thì phải ghi dữ liệu vào 1 file khác và request
 
-def findInforCurrency(currency):
+def findInforCurrency(currency, day, month, year):
+    print("TIẾN HÀNH TRA CỨU NÀO")
     fileDataRead = "data.json"
     f = open(fileDataRead, "r", encoding='utf-8-sig')
     data = json.load(f)
     checkFind = False
+    nameFind = "results" + day + month + year
+    print("THỜI GIAN YÊU CẦU: ", nameFind)
     try:
-        counter = 0
-        while counter < 20:
-            currencyData = str(data["results"][counter]["currency"])
-            if (currencyData == currency):
-                    checkFind = True
-                    replyClient = {"buy_cash":data["results"][counter]["buy_cash"] ,
-                            "buy_transfer":data["results"][counter]["buy_transfer"],
-                            "currency":currency,
-                            "sell":data["results"][counter]["sell"]}
-                    #Chuyển về kiểu bytes để gửi về cho client.
-                    inforCurrency = json.dumps(replyClient).encode('utf-8')
-                    conn.send(inforCurrency)
-                    break
-            counter = counter + 1
+        if nameFind in data.keys():
+            print("CÓ THỜI GIAN YÊU CẦU NÈ")
+            counter = 0
+            while counter < 20:
+                currencyData = str(data[nameFind][counter]["currency"])
+                if (currencyData == currency):
+                        print("TÌM ĐƯỢC THÔNG TIN RỒI NÈ")
+                        checkFind = True
+                        replyClient = {"buy_cash":data[nameFind][counter]["buy_cash"] ,
+                                "buy_transfer":data[nameFind][counter]["buy_transfer"],
+                                "currency":currency,
+                                "sell":data[nameFind][counter]["sell"]}
+                        print("KẾT QUẢ SẼ TRẢ VỀ")
+                        print(replyClient)
+                        #Chuyển về kiểu bytes để gửi về cho client.
+                        inforCurrency = json.dumps(replyClient).encode('utf-8')
+                        print("GỬI KẾT QUẢ CHO CLIENT")
+                        conn.send(inforCurrency)
+                        break
+                counter = counter + 1
 
         if checkFind == False:
+            print("TRẢ VỀ KẾT QUẢ LÀ BỊ LỖI")
             replyClient = {"id": -1} # tin nhắn không thành công format json
-            findError = pickle.dumps(replyClient)
-            conn.send(findError)
+            noteError = json.dumps(replyClient).encode('utf-8')
+            #findError = pickle.dumps(replyClient)
+            conn.send(noteError)
         #ĐOẠN NÀY XEM NÊN CẦU THIẾT KHÔNG
         else:
+            print("TRẢ VỀ KẾT QUẢ LÀ BỊ LỖI")
             check = {"id": 0}
-            success = pickle.dumps(check)
-            conn.send(success)
+            noteError = json.dumps(check).encode('utf-8')
+            #success = pickle.dumps(check)
+            conn.send(noteError)
         f.close()
         return
     except socket.error:
         return
 
 
+
 def LookUp(conn, addr):
+    print("XEM LÀ TRA CỨU HAY KHÔNG.")
     while True:
-        try:
-            msgClient = conn.recv(1024).decode("utf8")   #lấy yêu cầu tra cứu hay thoát clien
+        try:            
+            msgClient = conn.recv(1024).decode("utf8")   #lấy yêu cầu tra cứu hay thoát client
             if msgClient == "stop lookup":   # "dung tra cuu"
                 return
             
+            print("BẮT ĐẦU NHẬN THÔNG TIN TRA CỨU.")
             msgCurrency = conn.recv(1024).decode("utf8")
-            findInforCurrency(msgCurrency)
+            msgDay = conn.recv(1024).decode("utf8")
+            msgMonth = conn.recv(1024).decode("utf8")
+            msgYear = conn.recv(1024).decode("utf8")
+            
+            print("THÔNG TIN TRA CỨU LẤY ĐƯỢC.")
+            print(msgDay)
+            print(msgMonth)
+            print(msgYear)
+            findInforCurrency(msgCurrency, msgDay, msgMonth, msgYear)
         except socket.error:
             return
 
