@@ -143,7 +143,7 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
     tree.column('#2', stretch=tk.YES)
     tree.column('#3', stretch=tk.YES)
     tree.column('#4', stretch=tk.YES)
-    tree.grid(row=5, columnspan=4, sticky='nsew')
+    tree.grid(row=1, column=4, rowspan=20 ,sticky='nsew')
 
     #===============================
     inputDay = tk.Entry(mainWindown, width=15)
@@ -154,15 +154,15 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
     inputYear.insert(0, 'Year')
     #=========================================
     inputDay.grid(row=1, column=1)
-    inputMonth.grid(row=1, column=2)
-    inputYear.grid(row=1, column=3)
+    inputMonth.grid(row=2, column=1)
+    inputYear.grid(row=3, column=1)
     #==================================================
     #label = tk.Label(app, bg="white", pady=5, font=(None, 1), height=20, width=720)
     msgWarning = tk.Label(mainWindown, bg = "red", text = "You can only look up the date:" 
                                                 + str(dayFirst) + "/" 
                                                 + str(monthFirst) + "/"  
                                                 + str(yearFirst))
-    msgWarning.grid(row = 3, column = 4)
+    msgWarning.grid(row = 14, column = 1)
 
     option = dropDownList(mainWindown)
     dropdown = option[0] # Đây là cái list tiền
@@ -171,10 +171,10 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
     buttonExit = tk.Button(mainWindown, text="Exit", command=lambda: stopLookup(mainWindown))
     
     dropdownLabel = tk.Label(mainWindown, text = "Choose Currency")
-    dropdownLabel.grid(row=2, column=1)
-    dropdown.grid(row=2, column=2)
-    buttonSearch.grid(row=3, column=2)
-    buttonExit.grid(row=3, column=3)
+    dropdownLabel.grid(row=1, column=3, padx=10)
+    dropdown.grid(row=2, column=3, padx=10)
+    buttonSearch.grid(row=12, column=1, ipadx=6, ipady=4)
+    buttonExit.grid(row=12, column=3, ipadx=6, ipady=4)
     #     =====================================
     mainWindown.protocol("WM_DELETE_WINDOW", lambda: stopLookup(mainWindown))
 
