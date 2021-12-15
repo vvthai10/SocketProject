@@ -72,6 +72,7 @@ def LookUp(currency, day, month, year, tree ):   #, child_windown
     i = 1
     while True:
         #3072
+        #1024
         resultServer = client.recv(1024)
         #Chuyển kết quả từ bytes sang kiểu dict
         
@@ -212,12 +213,17 @@ def Login(UsernameEntry, PassEntry, loginUI):
     try:
         client.sendall(bytes("continue", "utf8"))
         username = UsernameEntry.get()
-        print(username)
-        client.sendall(bytes(username, "utf8"))
         password = PassEntry.get()
-        print(password)
-        client.sendall(bytes(password, "utf8"))
+        
+        inforUser_Dict = {"account": username, "password": password}
+        inforUser_String = json.dumps(inforUser_Dict)
+        print(inforUser_Dict)
+        print(type(inforUser_Dict))
+        client.sendall(bytes(inforUser_String, "utf8"))
+        #client.sendall(bytes(password, "utf8"))
+
         noticeServer = client.recv(1024).decode("utf8")
+        print("Gui thong tin ve")
     except socket.error:
         tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
         client.close()

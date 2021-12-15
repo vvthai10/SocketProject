@@ -86,8 +86,14 @@ def LogIn(conn, addr):
             msgCheck = conn.recv(1024).decode("utf8")
             if msgCheck == "break":
                 return
-            usernameRecv = conn.recv(1024).decode("utf8")
-            passwordRecv = conn.recv(1024).decode("utf8")
+            #usernameRecv = conn.recv(1024).decode("utf8")
+            #passwordRecv = conn.recv(1024).decode("utf8")
+            inforUser_Bytes = conn.recv(1024).decode("utf8")
+            inforUser_Dict = json.loads(inforUser_Bytes)
+            usernameRecv = inforUser_Dict["account"]
+            passwordRecv = inforUser_Dict["password"]
+            print("TK: " + usernameRecv)
+            print("MK: " + passwordRecv)
             print("LAY XONG ROI NE")
             success = False
             while fileAccountRead.tell() != os.fstat(fileAccountRead.fileno()).st_size:
@@ -266,7 +272,6 @@ def clientExit(conn, addr):
 def requestClient(conn, addr):
     while True:
         print('[handle_client] read command')
-
         try:
             command = conn.recv(1024).decode("utf8")
         except:
