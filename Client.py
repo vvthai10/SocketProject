@@ -41,7 +41,7 @@ def LookUp(currency, day, month, year, tree ):   #, child_windown
         getCurrency = currency.get()  #lấy thông tin loại tiền muốn tra cứu
         getDay = day.get()
         getMonth = month.get()
-        getYear = year.get()
+        getYear = year.get()                        
 
         if(len(getDay) == 1):
             getDay = "0" + getDay
@@ -91,6 +91,7 @@ def LookUp(currency, day, month, year, tree ):   #, child_windown
         else:
             tree.insert(parent='', index='end', text = "" + str(i), 
                         values=(result['currency'], result['buy_cash'], result['buy_transfer'], result['sell']))
+            
         i = i + 1
 
 def dropDownList(window):
