@@ -53,16 +53,21 @@ def LookUp(currency, day, month, year, tree ):   #, child_windown
         print(getMonth)
         print(getYear)
         #================
-        print("GỬI DÒNG 1")
+        print("Gui continue")
         client.sendall(bytes(isContinue, "utf8"))
-        print("GỬI DÒNG 2")
-        client.sendall(bytes(getCurrency, "utf8"))
+        #================
+        inforLoopup_Dict = {"currency": getCurrency, "day": getDay, "month": getMonth, "year": getYear}
+        inforLoopup_String = json.dumps(inforLoopup_Dict)
+        print("Gui thong tin tra cuu")
+        client.sendall(bytes(inforLoopup_String, "utf8"))
+        '''
         print("GỬI DÒNG 3")
         client.sendall(bytes(getDay, "utf8"))
         print("GỬI DÒNG 4")
         client.sendall(bytes(getMonth, "utf8"))
         print("GỬI DÒNG 5")
         client.sendall(bytes(getYear, "utf8"))
+        '''
     except socket.error:
         tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
         client.close()
@@ -129,9 +134,13 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
         return
     mainWindown = Toplevel(root)
     mainWindown.title("App")
-    mainWindown.geometry("1200x300")
+    mainWindown.geometry("1240x250")
     columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
     tree = ttk.Treeview(mainWindown, columns=columns)
+    vsb = ttk.Scrollbar(mainWindown, orient = "vertical", command = tree.yview)
+    vsb.place(x = 1220, y = 30, height = 165)
+    tree.configure(yscrollcommand = vsb.set)
+
     tree.heading('#0', text='STT')
     tree.heading('#1', text='Currency')
     tree.heading('#2', text='Buy Cash')
@@ -184,11 +193,16 @@ def Registration(UsernameEntry, PassEntry, PassAgianEntry, registerUI):
     try:
         client.sendall(bytes("continue", "utf8"))
         username = UsernameEntry.get()
-        client.sendall(bytes(username, "utf8"))
         password = PassEntry.get()
-        client.sendall(bytes(password, "utf8"))
         passwordRep = PassAgianEntry.get()
+        inforRegis_Dict = {"account": username, "password": password, "password_rep": passwordRep}
+        inforURegis_String = json.dumps(inforRegis_Dict)
+        client.sendall(bytes(inforURegis_String, "utf8"))
+        '''
+        client.sendall(bytes(username, "utf8"))
+        client.sendall(bytes(password, "utf8"))
         client.sendall(bytes(passwordRep, "utf8"))
+        '''
 
         noticeServer = client.recv(1024).decode("utf8")
     except socket.error:
@@ -368,9 +382,9 @@ def isExit():
 # -------------main-----------------
 
 root = tk.Tk()
-root.geometry("900x500")
+root.geometry("800x570")
 root.title("App")
-MainImage=Image.open("gold_price.PNG")
+MainImage=Image.open("background.PNG")
 ImageScr=ImageTk.PhotoImage(MainImage)
 root.iconbitmap('dollar.ico')
 MainLabel = tkinter.Label(image=ImageScr)

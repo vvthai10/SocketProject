@@ -47,9 +47,17 @@ def Registration(conn, addr):
             msgCheck = conn.recv(1024).decode("utf8")
             if msgCheck == "break":
                 return
+            
+            inforRegis_String = conn.recv(1024).decode("utf8")
+            inforRegis_Dict = json.loads(inforRegis_String)
+            usernameRecv = inforRegis_Dict["account"]
+            passwordRecv = inforRegis_Dict["password"]
+            passwordRepRecv = inforRegis_Dict["password_rep"]
+            '''
             usernameRecv = conn.recv(1024).decode("utf8")
             passwordRecv = conn.recv(1024).decode("utf8")
             passwordRepRecv = conn.recv(1024).decode("utf8")
+            '''
             check_exist = usernameRecv
             success = True
             while fileAccountRead.tell() != os.fstat(fileAccountRead.fileno()).st_size:
@@ -88,8 +96,8 @@ def LogIn(conn, addr):
                 return
             #usernameRecv = conn.recv(1024).decode("utf8")
             #passwordRecv = conn.recv(1024).decode("utf8")
-            inforUser_Bytes = conn.recv(1024).decode("utf8")
-            inforUser_Dict = json.loads(inforUser_Bytes)
+            inforUser_String = conn.recv(1024).decode("utf8")
+            inforUser_Dict = json.loads(inforUser_String)
             usernameRecv = inforUser_Dict["account"]
             passwordRecv = inforUser_Dict["password"]
             print("TK: " + usernameRecv)
@@ -238,12 +246,20 @@ def LookUp(conn, addr):
             msgClient = conn.recv(1024).decode("utf8")   #lấy yêu cầu tra cứu hay thoát client
             if msgClient == "stop lookup":   # "dung tra cuu"
                 return
-            
+
+            inforLoopup_String = conn.recv(1024).decode("utf8")
+            inforUser_Dict = json.loads(inforLoopup_String)
+            msgCurrency = inforUser_Dict["currency"]
+            msgDay = inforUser_Dict["day"]
+            msgMonth = inforUser_Dict["month"]
+            msgYear = inforUser_Dict["year"]
+            '''
             print("BẮT ĐẦU NHẬN THÔNG TIN TRA CỨU.")
             msgCurrency = conn.recv(1024).decode("utf8")
             msgDay = conn.recv(1024).decode("utf8")
             msgMonth = conn.recv(1024).decode("utf8")
             msgYear = conn.recv(1024).decode("utf8")
+            '''
             
             print("THÔNG TIN TRA CỨU LẤY ĐƯỢC.")
             print(msgDay)
@@ -365,7 +381,7 @@ class Application(tk.Frame):
         self.msgWarning.place(anchor = 'center')
         self.msgWarning.grid(row = 0, column = 0)
         
-        self.tree = ttk.Treeview(self, selectmode = 'browse', height=23)
+        self.tree = ttk.Treeview(self, selectmode = 'browse', height=15)
         self.tree.place(x = 30, y = 95)
 
         self.vsb = ttk.Scrollbar(self, orient = "vertical", command = self.tree.yview)
@@ -385,7 +401,7 @@ class Application(tk.Frame):
 
 def runtk():  # runs in background thread
     app = Application()     
-    app.master.geometry("1080x600")                   
+    app.master.geometry("1080x400")                   
     app.master.title('SERVER CURRENCY')     
     app.mainloop()
     
