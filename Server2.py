@@ -339,22 +339,23 @@ PORT = 65432
 
 class Application(tk.Frame):              
     def __init__(self, master=None):
-        tk.Frame.__init__(self, master)  
-        #self.geometry("900x300") 
+        tk.Frame.__init__(self, master)
         self.grid()                    
         self.createWidgets()
 
-    def printHello(self):
-        #list1 = [1, 2, 3, 4, 5, 6]
-        #a = random.choice(list1)
-        #self.tree.insert(parent='', index='end', text = "" , values=(str(a), "64682", "Chịch em đi"))
-        while(queue.empty() != True):
-            data = queue.get()
-            self.tree.insert(parent='', index='end', text = "" , values=(data))
+    def printInformation(self):
+        while(1):
+            while(queue.empty() != True):
+                data = queue.get()
+                self.tree.insert(parent='', index='end', text = "" , values=(data))
+    
 
     def createWidgets(self):   
-        self.printButton = tk.Button(self, text='Load',command=lambda: self.printHello())         
-        self.printButton.grid(row=1,column=0) 
+        #self.printButton = tk.Button(self, text='Load',command=lambda: self.printInformation())         
+        #self.printButton.grid(row=1,column=0) 
+        printInfo = threading.Thread(target=self.printInformation)   # gui thread
+        printInfo.daemon = True  # background thread will exit if main thread exits
+        printInfo.start()
         self.msgWarning = tk.Label(self, font=("Arial", 25), text = "SERVER CURRENCY CONVERSION: " + HOST)
         self.msgWarning.place(anchor = 'center')
         self.msgWarning.grid(row = 0, column = 0)
@@ -380,7 +381,7 @@ class Application(tk.Frame):
 def runtk():  # runs in background thread
     app = Application()     
     app.master.geometry("1080x600")                   
-    app.master.title('Sample application')     
+    app.master.title('SERVER CURRENCY')     
     app.mainloop()
     
 thd = threading.Thread(target=runtk)   # gui thread
