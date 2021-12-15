@@ -162,7 +162,7 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
                                                 + str(dayFirst) + "/" 
                                                 + str(monthFirst) + "/"  
                                                 + str(yearFirst))
-    msgWarning.grid(row = 14, column = 1)
+    msgWarning.grid(row = 20, column = 1, columnspan=3, padx=10) 
 
     option = dropDownList(mainWindown)
     dropdown = option[0] # Đây là cái list tiền
