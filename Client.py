@@ -132,7 +132,6 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
     mainWindown.geometry("1300x250")
     columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
     tree = ttk.Treeview(mainWindown, columns=columns)
-
     vsb = ttk.Scrollbar(mainWindown, orient = "vertical", command = tree.yview)
     vsb.place(x = 1220, y = 30, height = 165)
     tree.configure(yscrollcommand = vsb.set)
