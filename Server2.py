@@ -402,7 +402,8 @@ class Application(tk.Frame):
 def runtk():  # runs in background thread
     app = Application()     
     app.master.geometry("1080x400")                   
-    app.master.title('SERVER CURRENCY')     
+    app.master.title('SERVER CURRENCY')   
+    app.master.iconbitmap('dollar.ico')
     app.mainloop()
     
 thd = threading.Thread(target=runtk)   # gui thread
