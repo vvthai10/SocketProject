@@ -405,9 +405,12 @@ class Application(tk.Frame):
 def runtk():
     app = Application()     
     app.master.geometry("1080x400")                   
-    app.master.title('SERVER CURRENCY')     
+    app.master.title('SERVER CURRENCY')   
+    app.master.iconbitmap('dollar.ico')
     app.mainloop()
-    
+
+
+#====================MAIN========================
 thd = threading.Thread(target=runtk)  
 thd.daemon = True  #Background thread will exit if main thread exits
 thd2 = threading.Thread(target=severLoop) 
