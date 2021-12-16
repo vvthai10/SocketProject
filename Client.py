@@ -8,8 +8,13 @@ import pickle
 from PIL import  Image,ImageTk
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+#Use global variable.
+index = 0
 # =============================FUNCTION============================
 
+#@DESCR: Connect to server.
+#@PARAM: None
+#@RETURN: None
 def connectToServer():
     HOST = MainEntry.get()
     PORT = 65432
@@ -22,6 +27,9 @@ def connectToServer():
     if ImageScr:
         tkinter.messagebox.showinfo(title="Notification", message="Connected to the server.")
 
+#@DESCR: Stop lookup.
+#@PARAM: None
+#@RETURN: None
 def stopLookup(child_windown):
     msgRequest = "stop lookup"
     try:
@@ -33,12 +41,14 @@ def stopLookup(child_windown):
         return
     child_windown.destroy()
 
-
-def LookUp(currency, day, month, year, tree ):   #, child_windown
+#@DESCR: Send request and receive result of server.
+#@PARAM: currency, day, month, year, tree
+#@RETURN: None
+def LookUp(currency, day, month, year, tree ):  
     try:
         isContinue = "continue"
                      
-        getCurrency = currency.get()  #lấy thông tin loại tiền muốn tra cứu
+        getCurrency = currency.get()
         getDay = day.get()
         getMonth = month.get()
         getYear = year.get()                        
@@ -48,52 +58,37 @@ def LookUp(currency, day, month, year, tree ):   #, child_windown
         if(len(getMonth) == 1):
             getMonth = "0" + getMonth
         
-        print(getCurrency)
-        print(getDay)
-        print(getMonth)
-        print(getYear)
         #================
-        print("Gui continue")
         client.sendall(bytes(isContinue, "utf8"))
         #================
         inforLoopup_Dict = {"currency": getCurrency, "day": getDay, "month": getMonth, "year": getYear}
         inforLoopup_String = json.dumps(inforLoopup_Dict)
-        print("Gui thong tin tra cuu")
         client.sendall(bytes(inforLoopup_String, "utf8"))
-        '''
-        print("GỬI DÒNG 3")
-        client.sendall(bytes(getDay, "utf8"))
-        print("GỬI DÒNG 4")
-        client.sendall(bytes(getMonth, "utf8"))
-        print("GỬI DÒNG 5")
-        client.sendall(bytes(getYear, "utf8"))
-        '''
+        
     except socket.error:
         tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
         client.close()
         root.destroy()
         return
-    #Thực hiện nhiều lần yêu cầu của người dùng.
-    i = 1
+    #Receive result.
+    global index
     while True:
-        #3072
-        #1024
         resultServer = client.recv(1024)
-        #Chuyển kết quả từ bytes sang kiểu dict
-        
+        #Change types Bytes to Dict.
         result = json.loads(resultServer.decode('ISO-8859-1'))
         if result == {"id": 0}:
             break
         elif result == {"id": -1}:
-            #HÌNH NHƯ MÌNH KHÔNG CẦN THÊM CÁI NÀY.
-            tkinter.messagebox.showinfo("Thông báo","Thời gian bạn yêu cầu không có, hãy đảm bảo thời gian chính xác.")
+            tkinter.messagebox.showinfo("Notification","The time you requested is not available.")
             break
         else:
-            tree.insert(parent='', index='end', text = "" + str(i), 
+            index = index + 1
+            tree.insert(parent='', index='end', text = "" + str(index), 
                         values=(result['currency'], result['buy_cash'], result['buy_transfer'], result['sell']))
-            
-        i = i + 1
 
+#@DESCR: Send request and receive result of server.
+#@PARAM: currency, day, month, year, tree
+#@RETURN: None            
 def dropDownList(window):
     OPTIONS = [
         "AUD",
@@ -123,73 +118,9 @@ def dropDownList(window):
 
     return [menu,variable]
 
-
-def LookUpUI(dayFirst, monthFirst, yearFirst):
-    msgRequest = "lookup"
-    try:
-        client.sendall(bytes(msgRequest, "utf8"))
-    except socket.error:
-        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
-        client.close()
-        root.destroy()
-        return
-    mainWindown = Toplevel(root)
-    mainWindown.title("App")
-    mainWindown.geometry("1240x250")
-    columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
-    tree = ttk.Treeview(mainWindown, columns=columns)
-    vsb = ttk.Scrollbar(mainWindown, orient = "vertical", command = tree.yview)
-    vsb.place(x = 1220, y = 30, height = 165)
-    tree.configure(yscrollcommand = vsb.set)
-
-    tree.heading('#0', text='STT')
-    tree.heading('#1', text='Currency')
-    tree.heading('#2', text='Buy Cash')
-    tree.heading('#3', text='Buy Transfer')
-    tree.heading('#4', text='Sell')
-
-    # Specify attributes of the columns
-    tree.column('#0', stretch=tk.YES)
-    tree.column('#1', stretch=tk.YES)
-    tree.column('#2', stretch=tk.YES)
-    tree.column('#3', stretch=tk.YES)
-    tree.column('#4', stretch=tk.YES)
-    tree.grid(row=1, column=4, rowspan=20 ,sticky='nsew')
-
-    #===============================
-    inputDay = tk.Entry(mainWindown, width=15)
-    inputDay.insert(0, 'Day')
-    inputMonth = tk.Entry(mainWindown, width=15)
-    inputMonth.insert(0, 'Month')
-    inputYear = tk.Entry(mainWindown, width=15)
-    inputYear.insert(0, 'Year')
-    #=========================================
-    inputDay.grid(row=1, column=1)
-    inputMonth.grid(row=2, column=1)
-    inputYear.grid(row=3, column=1)
-    #==================================================
-    #label = tk.Label(app, bg="white", pady=5, font=(None, 1), height=20, width=720)
-    msgWarning = tk.Label(mainWindown, bg = "red", text = "You can only look up the date:" 
-                                                + str(dayFirst) + "/" 
-                                                + str(monthFirst) + "/"  
-                                                + str(yearFirst))
-    msgWarning.grid(row = 20, column = 1, columnspan=3, padx=10) 
-
-    option = dropDownList(mainWindown)
-    dropdown = option[0] # Đây là cái list tiền
-    inputCurrency = option[1] # Đây là loại tiền mình muốn tra cứu
-    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(inputCurrency, inputDay, inputMonth, inputYear, tree)) #, mainWindown
-    buttonExit = tk.Button(mainWindown, text="Exit", command=lambda: stopLookup(mainWindown))
-    
-    dropdownLabel = tk.Label(mainWindown, text = "Choose Currency")
-    dropdownLabel.grid(row=1, column=3, padx=10)
-    dropdown.grid(row=2, column=3, padx=10)
-    buttonSearch.grid(row=12, column=1, ipadx=6, ipady=4)
-    buttonExit.grid(row=12, column=3, ipadx=6, ipady=4)
-    #     =====================================
-    mainWindown.protocol("WM_DELETE_WINDOW", lambda: stopLookup(mainWindown))
-
-
+#@DESCR: Request registration and send information of account.
+#@PARAM: UsernameEntry, PassEntry, PassAgianEntry, registerUI.
+#@RETURN: None
 def Registration(UsernameEntry, PassEntry, PassAgianEntry, registerUI):
     try:
         client.sendall(bytes("continue", "utf8"))
@@ -199,12 +130,7 @@ def Registration(UsernameEntry, PassEntry, PassAgianEntry, registerUI):
         inforRegis_Dict = {"account": username, "password": password, "password_rep": passwordRep}
         inforURegis_String = json.dumps(inforRegis_Dict)
         client.sendall(bytes(inforURegis_String, "utf8"))
-        '''
-        client.sendall(bytes(username, "utf8"))
-        client.sendall(bytes(password, "utf8"))
-        client.sendall(bytes(passwordRep, "utf8"))
-        '''
-
+        
         noticeServer = client.recv(1024).decode("utf8")
     except socket.error:
         tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
@@ -223,7 +149,9 @@ def Registration(UsernameEntry, PassEntry, PassAgianEntry, registerUI):
         PassEntry.delete(0, 'end')
         PassAgianEntry.delete(0, 'end')
 
-
+#@DESCR: Request login and send information of account.
+#@PARAM: UsernameEntry, PassEntry, loginUI.
+#@RETURN: None
 def Login(UsernameEntry, PassEntry, loginUI):
     try:
         client.sendall(bytes("continue", "utf8"))
@@ -232,40 +160,42 @@ def Login(UsernameEntry, PassEntry, loginUI):
         
         inforUser_Dict = {"account": username, "password": password}
         inforUser_String = json.dumps(inforUser_Dict)
-        print(inforUser_Dict)
-        print(type(inforUser_Dict))
         client.sendall(bytes(inforUser_String, "utf8"))
-        #client.sendall(bytes(password, "utf8"))
 
         noticeServer = client.recv(1024).decode("utf8")
-        print("Gui thong tin ve")
     except socket.error:
         tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
         client.close()
         root.destroy()
         return
     if noticeServer == "Login successfully":
-        #KHI ĐĂNG NHẬP THÀNH CÔNG< NHẬN THÔNG TIN XEM GIỚI HẠN NGÀY TRA CỨU.
+        #Get information about date first can lookup.
         dayFirst = client.recv(1024).decode("utf8")
         monthFirst = client.recv(1024).decode("utf8")
         yearFirst = client.recv(1024).decode("utf8")
         print(dayFirst, " + ", monthFirst, " + ", yearFirst)
         tkinter.messagebox.showinfo(title="Notification", message="Login successfully.")
         loginUI.destroy()
-        # Đăng nhập thành công thì được vào để tra cứu
         LookUpUI(dayFirst, monthFirst, yearFirst)
     else:
         tkinter.messagebox.showinfo(title="Error", message="Account doesn't exist.")
         UsernameEntry.delete(0, 'end')
         PassEntry.delete(0, 'end')
 
-
+#@DESCR: Close and send request to server.
+#@PARAM: userUI.
+#@RETURN: None
 def isClose(userUI):
     client.sendall(bytes("break", "utf8"))
     userUI.destroy()
 
+def isExit():
+    msgRequest = "exit"
+    client.sendall(bytes(msgRequest, "utf8"))
+    client.close()
+    root.destroy()
 
-# =============Viết GUI cho đăng kí và đăng nhập=============
+# =============Function UI=============
 def RegistrationUI():
     msgRequest = "register"
     try:
@@ -326,7 +256,6 @@ def RegistrationUI():
     Frame(registerUI,width=200,height=1.2,bg='black').place(x=97,y=130)
     Frame(registerUI,width=200,height=1.2,bg='black').place(x=97,y=160)
 
-
 def LoginUI():
     msgRequest = "login"
     try:
@@ -371,16 +300,74 @@ def LoginUI():
     loginUI.protocol("WM_DELETE_WINDOW", lambda: isClose(loginUI))
     Frame(loginUI,width=200,height=1.2,bg='black').place(x=97,y=100)
     Frame(loginUI,width=200,height=1.2,bg='black').place(x=97,y=130)
+#@DESCR: Set UI of lookup and print result in screen.
+#@PARAM: dayFirst, monthFirst, yearFirst (Use warning user only can lookup after date.)
+#@RETURN: None
+def LookUpUI(dayFirst, monthFirst, yearFirst):
+    msgRequest = "lookup"
+    try:
+        client.sendall(bytes(msgRequest, "utf8"))
+    except socket.error:
+        tkinter.messagebox.showinfo(title="Notification", message="Server closed connection.")
+        client.close()
+        root.destroy()
+        return
+    mainWindown = Toplevel(root)
+    mainWindown.title("App")
+    mainWindown.geometry("1240x250")
+    columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
+    tree = ttk.Treeview(mainWindown, columns=columns)
+    vsb = ttk.Scrollbar(mainWindown, orient = "vertical", command = tree.yview)
+    vsb.place(x = 1220, y = 30, height = 165)
+    tree.configure(yscrollcommand = vsb.set)
 
+    tree.heading('#0', text='STT')
+    tree.heading('#1', text='Currency')
+    tree.heading('#2', text='Buy Cash')
+    tree.heading('#3', text='Buy Transfer')
+    tree.heading('#4', text='Sell')
 
-def isExit():
-    msgRequest = "exit"
-    client.sendall(bytes(msgRequest, "utf8"))
-    client.close()
-    root.destroy()
+    tree.column('#0', stretch=tk.YES)
+    tree.column('#1', stretch=tk.YES)
+    tree.column('#2', stretch=tk.YES)
+    tree.column('#3', stretch=tk.YES)
+    tree.column('#4', stretch=tk.YES)
+    tree.grid(row=1, column=4, rowspan=20 ,sticky='nsew')
 
+    #===============================
+    inputDay = tk.Entry(mainWindown, width=15)
+    inputDay.insert(0, 'Day')
+    inputMonth = tk.Entry(mainWindown, width=15)
+    inputMonth.insert(0, 'Month')
+    inputYear = tk.Entry(mainWindown, width=15)
+    inputYear.insert(0, 'Year')
+    #=========================================
+    inputDay.grid(row=1, column=1)
+    inputMonth.grid(row=2, column=1)
+    inputYear.grid(row=3, column=1)
+    #==================================================
+    #label = tk.Label(app, bg="white", pady=5, font=(None, 1), height=20, width=720)
+    msgWarning = tk.Label(mainWindown, bg = "red", text = "You can only look up the date:" 
+                                                + str(dayFirst) + "/" 
+                                                + str(monthFirst) + "/"  
+                                                + str(yearFirst))
+    msgWarning.grid(row = 20, column = 1, columnspan=3, padx=10) 
 
-# -------------main-----------------
+    option = dropDownList(mainWindown)
+    dropdown = option[0] # Đây là cái list tiền
+    inputCurrency = option[1] # Đây là loại tiền mình muốn tra cứu
+    buttonSearch = tk.Button(mainWindown, text='Lookup', command=lambda: LookUp(inputCurrency, inputDay, inputMonth, inputYear, tree)) #, mainWindown
+    buttonExit = tk.Button(mainWindown, text="Exit", command=lambda: stopLookup(mainWindown))
+    
+    dropdownLabel = tk.Label(mainWindown, text = "Choose Currency")
+    dropdownLabel.grid(row=1, column=3, padx=10)
+    dropdown.grid(row=2, column=3, padx=10)
+    buttonSearch.grid(row=12, column=1, ipadx=6, ipady=4)
+    buttonExit.grid(row=12, column=3, ipadx=6, ipady=4)
+    #     =====================================
+    mainWindown.protocol("WM_DELETE_WINDOW", lambda: stopLookup(mainWindown))
+
+#================MAIN=======================
 
 root = tk.Tk()
 root.geometry("800x570")
