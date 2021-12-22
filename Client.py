@@ -312,8 +312,9 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
         root.destroy()
         return
     mainWindown = Toplevel(root)
-    mainWindown.title("App")
+    mainWindown.title("CURRENCY APP")
     mainWindown.geometry("1240x250")
+    mainWindown.iconbitmap('dollar.ico')
     columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
     tree = ttk.Treeview(mainWindown, columns=columns)
     vsb = ttk.Scrollbar(mainWindown, orient = "vertical", command = tree.yview)
@@ -335,10 +336,38 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
 
     #===============================
     inputDay = tk.Entry(mainWindown, width=15)
+    
+    def on_enter(e):
+        inputDay.delete(0,'end')    
+    def on_leave(e):
+        if inputDay.get()=='':   
+            inputDay.insert(0,'Day')
+
+    inputDay.bind("<FocusIn>", on_enter)
+    inputDay.bind("<FocusOut>", on_leave)
     inputDay.insert(0, 'Day')
+
     inputMonth = tk.Entry(mainWindown, width=15)
+    def on_enter(e):
+        inputMonth.delete(0,'end')    
+    def on_leave(e):
+        if inputMonth.get()=='':   
+            inputMonth.insert(0,'Month')
+
+    inputMonth.bind("<FocusIn>", on_enter)
+    inputMonth.bind("<FocusOut>", on_leave)
     inputMonth.insert(0, 'Month')
+    
     inputYear = tk.Entry(mainWindown, width=15)
+    
+    def on_enter(e):
+        inputYear.delete(0,'end')    
+    def on_leave(e):
+        if inputYear.get()=='':   
+            inputYear.insert(0,'Year')
+
+    inputYear.bind("<FocusIn>", on_enter)
+    inputYear.bind("<FocusOut>", on_leave)
     inputYear.insert(0, 'Year')
     #=========================================
     inputDay.grid(row=1, column=1)
@@ -381,7 +410,7 @@ def on_enter(e):
         MainEntry.delete(0,'end')    
 def on_leave(e):
         if MainEntry.get()=='':   
-            MainEntry.insert(0,'UserName')
+            MainEntry.insert(0,'Press IP')
 MainEntry = tk.Entry(font=("Arial", 12),fg='black',bg='white')
 MainEntry.place(relx=.5, rely=.3, anchor="center",width=300,height=30)
 MainEntry.bind("<FocusIn>", on_enter)
