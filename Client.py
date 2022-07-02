@@ -205,7 +205,7 @@ def RegistrationUI():
         root.destroy()
         return
     registerUI = Toplevel(root)
-    registerUI.iconbitmap('./images/dollar.ico')
+    registerUI.iconbitmap('dollar.ico')
     registerUI.config(bg='white')
     UsernameEntry = tk.Entry(registerUI, width=35,font=("Arial", 12),fg='black',border=0,bg='white')
     UsernameEntry.insert(0, 'UserName')
@@ -265,7 +265,7 @@ def LoginUI():
         root.destroy()
         return
     loginUI = Toplevel(root)
-    loginUI.iconbitmap('./images/dollar.ico')
+    loginUI.iconbitmap('dollar.ico')
     loginUI.config(bg='white')
     UsernameEntry = tk.Entry(loginUI, width=35,font=("Arial", 12),fg='black',border=0,bg='white' )
     UsernameEntry.insert(0, 'UserName')
@@ -314,7 +314,7 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
     mainWindown = Toplevel(root)
     mainWindown.title("CURRENCY APP")
     mainWindown.geometry("1240x250")
-    mainWindown.iconbitmap('./images/dollar.ico')
+    mainWindown.iconbitmap('dollar.ico')
     columns = ('Money', 'buy_cash', 'buy_transfer', 'sell')
     tree = ttk.Treeview(mainWindown, columns=columns)
     vsb = ttk.Scrollbar(mainWindown, orient = "vertical", command = tree.yview)
@@ -400,9 +400,9 @@ def LookUpUI(dayFirst, monthFirst, yearFirst):
 root = tk.Tk()
 root.geometry("800x570")
 root.title("App")
-MainImage=Image.open("./images/background.PNG")
+MainImage=Image.open("background.PNG")
 ImageScr=ImageTk.PhotoImage(MainImage)
-root.iconbitmap('./images/dollar.ico')
+root.iconbitmap('dollar.ico')
 MainLabel = tkinter.Label(image=ImageScr)
 MainLabel.image = ImageScr
 MainLabel.place(x=1,y=1)
@@ -427,7 +427,7 @@ ButtomConnect = tk.Button(text="Conect", command=connectToServer,
     font="arial 13",
     pady=10,
 )
-RedButtom = tk.PhotoImage(file="./images/redbuttom.png")
+RedButtom = tk.PhotoImage(file="red-buttom.png")
 RedButtom= RedButtom.subsample(1,1)
 ButtomConnect.config(image=RedButtom)
 ButtomConnect.place(relx=.7, rely=.3, anchor="center",width=96,height=30)

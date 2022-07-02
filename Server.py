@@ -406,7 +406,7 @@ def runtk():
     app = Application()     
     app.master.geometry("1080x400")                   
     app.master.title('SERVER CURRENCY')   
-    app.master.iconbitmap('./images/dollar.ico')
+    app.master.iconbitmap('dollar.ico')
     app.mainloop()
 
 
